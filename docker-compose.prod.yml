@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: clickynder_db
+    restart: always
+    environment:
+      POSTGRES_USER: clickinder
+      POSTGRES_PASSWORD: clickinder123
+      POSTGRES_DB: clickinder
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clickinder"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - clickynder-network
+
+  app:
+    image: clickynder-app:latest
+    container_name: clickynder_app
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - clickynder-network
+
+volumes:
+  postgres_data:
+
+networks:
+  clickynder-network:
+    driver: bridge
+
+

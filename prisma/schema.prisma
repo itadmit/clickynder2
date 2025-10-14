@@ -1,0 +1,734 @@
+// Clickinder Database Schema
+// מבוסס על PostgreSQL עם תמיכה מלאה ב-Multi-Tenant
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// משתמשים ועסקים (Users & Businesses)
+// ============================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  phone         String?
+  passwordHash  String    @map("password_hash")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  lastLoginAt   DateTime? @map("last_login_at")
+
+  // Relations
+  ownedBusinesses Business[]       @relation("BusinessOwner")
+  memberships     BusinessMember[]
+
+  @@index([email])
+  @@map("users")
+}
+
+model Business {
+  id                    String    @id @default(cuid())
+  ownerUserId           String    @map("owner_user_id")
+  name                  String
+  slug                  String    @unique
+  description           String?
+  phone                 String?
+  email                 String?
+  timezone              String    @default("Asia/Jerusalem")
+  locale                String    @default("he-IL")
+  
+  // מיתוג
+  logoUrl               String?   @map("logo_url")
+  primaryColor          String?   @map("primary_color") @default("#0ea5e9")
+  secondaryColor        String?   @map("secondary_color") @default("#d946ef")
+  font                  String    @default("Noto Sans Hebrew")
+  
+  // הגדרות
+  showBranches          Boolean   @default(false) @map("show_branches")
+  showStaff             Boolean   @default(true) @map("show_staff")
+  onlinePaymentEnabled  Boolean   @default(false) @map("online_payment_enabled")
+  currency              String    @default("ILS")
+  
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+  deletedAt             DateTime? @map("deleted_at")
+
+  // Relations
+  owner                 User                     @relation("BusinessOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  members               BusinessMember[]
+  branches              Branch[]
+  staff                 Staff[]
+  serviceCategories     ServiceCategory[]
+  services              Service[]
+  businessHours         BusinessHours[]
+  customers             Customer[]
+  appointments          Appointment[]
+  availabilityRules     AvailabilityRule[]
+  timeOffs              TimeOff[]
+  slotPolicy            SlotPolicy?
+  subscription          Subscription?
+  usageCounters         UsageCounter[]
+  notificationTemplates NotificationTemplate[]
+  notifications         Notification[]
+  dashboardNotifications DashboardNotification[]
+  integrations          Integration[]
+  webhooks              Webhook[]
+  payments              Payment[]
+  publicPages           PublicPage[]
+  eventTracking         EventTracking[]
+
+  @@index([slug])
+  @@index([ownerUserId])
+  @@map("businesses")
+}
+
+model BusinessMember {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id")
+  userId     String   @map("user_id")
+  role       MemberRole
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, userId])
+  @@index([businessId])
+  @@index([userId])
+  @@map("business_members")
+}
+
+enum MemberRole {
+  owner
+  admin
+  manager
+  staff
+  viewer
+}
+
+// ============================================
+// חבילות ומנויים (Packages & Subscriptions)
+// ============================================
+
+model Package {
+  id                      String   @id @default(cuid())
+  code                    PackageCode @unique
+  name                    String
+  maxBranches             Int      @map("max_branches")
+  maxStaff                Int      @map("max_staff")
+  monthlyAppointmentsCap  Int      @map("monthly_appointments_cap")
+  priceCents              Int      @map("price_cents")
+  featuresJson            Json?    @map("features_json")
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+
+  subscriptions Subscription[]
+
+  @@map("packages")
+}
+
+enum PackageCode {
+  starter
+  pro
+  ultra
+  enterprise
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  businessId           String             @unique @map("business_id")
+  packageId            String             @map("package_id")
+  status               SubscriptionStatus
+  provider             String             @default("payplus")
+  externalCustomerId   String?            @map("external_customer_id")
+  externalMandateToken String?            @map("external_mandate_token")
+  currentPeriodStart   DateTime           @map("current_period_start")
+  currentPeriodEnd     DateTime           @map("current_period_end")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  package  Package  @relation(fields: [packageId], references: [id])
+
+  @@index([businessId])
+  @@index([packageId])
+  @@map("subscriptions")
+}
+
+enum SubscriptionStatus {
+  active
+  past_due
+  canceled
+  trial
+}
+
+model UsageCounter {
+  id                 String   @id @default(cuid())
+  businessId         String   @map("business_id")
+  periodMonth        DateTime @map("period_month") @db.Date
+  appointmentsCount  Int      @default(0) @map("appointments_count")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, periodMonth])
+  @@index([businessId])
+  @@map("usage_counters")
+}
+
+// ============================================
+// סניפים, עובדים ושירותים (Branches, Staff, Services)
+// ============================================
+
+model Branch {
+  id               String    @id @default(cuid())
+  businessId       String    @map("business_id")
+  name             String
+  address          String?
+  phone            String?
+  active           Boolean   @default(true)
+  hasCustomHours   Boolean   @default(false) @map("has_custom_hours")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
+
+  business          Business           @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  staff             Staff[]
+  branchHours       BranchHours[]
+  availabilityRules AvailabilityRule[]
+  timeOffs          TimeOff[]
+  appointments      Appointment[]
+
+  @@index([businessId, active])
+  @@map("branches")
+}
+
+model Staff {
+  id                     String    @id @default(cuid())
+  businessId             String    @map("business_id")
+  branchId               String?   @map("branch_id")
+  name                   String
+  email                  String?
+  phone                  String?
+  roleLabel              String?   @map("role_label")
+  calendarColor          String?   @map("calendar_color")
+  active                 Boolean   @default(true)
+  calendarProvider       CalendarProvider @default(none) @map("calendar_provider")
+  calendarExternalId     String?   @map("calendar_external_id")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+  deletedAt              DateTime? @map("deleted_at")
+
+  business          Business           @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  branch            Branch?            @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  serviceStaff      ServiceStaff[]
+  staffHours        StaffHours[]
+  availabilityRules AvailabilityRule[]
+  timeOffs          TimeOff[]
+  appointments      Appointment[]
+
+  @@index([businessId, branchId, active])
+  @@map("staff")
+}
+
+enum CalendarProvider {
+  none
+  google
+  outlook
+  apple
+}
+
+model ServiceCategory {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id")
+  name       String
+  position   Int      @default(0)
+
+  business Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  services Service[]
+
+  @@unique([businessId, name])
+  @@index([businessId])
+  @@map("service_categories")
+}
+
+model Service {
+  id              String    @id @default(cuid())
+  businessId      String    @map("business_id")
+  categoryId      String?   @map("category_id")
+  name            String
+  durationMin     Int       @map("duration_min")
+  priceCents      Int?      @map("price_cents")
+  bufferAfterMin  Int       @default(0) @map("buffer_after_min")
+  description     String?
+  color           String?
+  active          Boolean   @default(true)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  business     Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  category     ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  serviceStaff ServiceStaff[]
+  appointments Appointment[]
+
+  @@index([businessId, active, categoryId])
+  @@map("services")
+}
+
+model ServiceStaff {
+  serviceId String @map("service_id")
+  staffId   String @map("staff_id")
+
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  staff   Staff   @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@id([serviceId, staffId])
+  @@map("service_staff")
+}
+
+// ============================================
+// שעות עבודה וזמינות (Hours & Availability)
+// ============================================
+
+model BusinessHours {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id")
+  weekday    Int      // 0=Sunday, 6=Saturday
+  openTime   String?  @map("open_time") // HH:MM format
+  closeTime  String?  @map("close_time") // HH:MM format
+  active     Boolean  @default(true)
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, weekday])
+  @@map("business_hours")
+}
+
+model BranchHours {
+  id        String   @id @default(cuid())
+  branchId  String   @map("branch_id")
+  weekday   Int
+  openTime  String?  @map("open_time")
+  closeTime String?  @map("close_time")
+  active    Boolean  @default(true)
+
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@unique([branchId, weekday])
+  @@map("branch_hours")
+}
+
+model StaffHours {
+  id        String   @id @default(cuid())
+  staffId   String   @map("staff_id")
+  weekday   Int
+  openTime  String?  @map("open_time")
+  closeTime String?  @map("close_time")
+  active    Boolean  @default(true)
+
+  staff Staff @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@unique([staffId, weekday])
+  @@map("staff_hours")
+}
+
+model AvailabilityRule {
+  id         String                @id @default(cuid())
+  businessId String                @map("business_id")
+  scope      AvailabilityRuleScope
+  branchId   String?               @map("branch_id")
+  staffId    String?               @map("staff_id")
+  date       DateTime              @db.Date
+  openTime   String?               @map("open_time")
+  closeTime  String?               @map("close_time")
+  isOpen     Boolean               @map("is_open")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  branch   Branch?  @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  staff    Staff?   @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@index([businessId, scope, date])
+  @@map("availability_rules")
+}
+
+enum AvailabilityRuleScope {
+  business
+  branch
+  staff
+}
+
+model TimeOff {
+  id         String       @id @default(cuid())
+  businessId String       @map("business_id")
+  scope      TimeOffScope
+  branchId   String?      @map("branch_id")
+  staffId    String?      @map("staff_id")
+  startAt    DateTime     @map("start_at")
+  endAt      DateTime     @map("end_at")
+  reason     String?
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  branch   Branch?  @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  staff    Staff?   @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@index([businessId, startAt, endAt])
+  @@map("time_off")
+}
+
+enum TimeOffScope {
+  branch
+  staff
+}
+
+model SlotPolicy {
+  id                  String          @id @default(cuid())
+  businessId          String          @unique @map("business_id")
+  defaultDurationMin  Int             @map("default_duration_min") @default(30)
+  defaultGapMin       Int             @map("default_gap_min") @default(0)
+  advanceWindowDays   Int             @map("advance_window_days") @default(30)
+  sameDayBooking      Boolean         @map("same_day_booking") @default(true)
+  roundingStrategy    RoundingStrategy @map("rounding_strategy") @default(continuous)
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("slot_policies")
+}
+
+enum RoundingStrategy {
+  on_the_hour
+  every_15
+  every_30
+  continuous
+}
+
+// ============================================
+// לקוחות ותורים (Customers & Appointments)
+// ============================================
+
+model Customer {
+  id           String   @id @default(cuid())
+  businessId   String   @map("business_id")
+  firstName    String   @map("first_name")
+  lastName     String   @map("last_name")
+  phone        String
+  email        String?
+  notes        String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  business     Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+  notifications Notification[]
+  dashboardNotifications DashboardNotification[]
+
+  @@index([businessId, phone])
+  @@index([businessId, email])
+  @@map("customers")
+}
+
+model Appointment {
+  id                String            @id @default(cuid())
+  businessId        String            @map("business_id")
+  branchId          String?           @map("branch_id")
+  serviceId         String            @map("service_id")
+  staffId           String?           @map("staff_id")
+  customerId        String            @map("customer_id")
+  startAt           DateTime          @map("start_at")
+  endAt             DateTime          @map("end_at")
+  status            AppointmentStatus @default(confirmed)
+  priceCents        Int?              @map("price_cents")
+  paymentStatus     PaymentStatus     @default(not_required) @map("payment_status")
+  paymentProvider   String?           @map("payment_provider")
+  confirmationCode  String            @unique @map("confirmation_code")
+  notesInternal     String?           @map("notes_internal")
+  notesCustomer     String?           @map("notes_customer")
+  source            AppointmentSource @default(public)
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+  canceledAt        DateTime?         @map("canceled_at")
+
+  business         Business            @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  branch           Branch?             @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  service          Service             @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  staff            Staff?              @relation(fields: [staffId], references: [id], onDelete: SetNull)
+  customer         Customer            @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  appointmentAudit AppointmentAudit[]
+  notifications    Notification[]
+  dashboardNotifications DashboardNotification[]
+  payments         Payment[]
+
+  @@index([businessId, startAt])
+  @@index([businessId, staffId, startAt])
+  @@index([businessId, branchId, startAt])
+  @@index([confirmationCode])
+  @@map("appointments")
+}
+
+enum AppointmentStatus {
+  pending
+  confirmed
+  canceled
+  no_show
+  completed
+}
+
+enum PaymentStatus {
+  not_required
+  pending
+  paid
+  refunded
+}
+
+enum AppointmentSource {
+  public
+  admin
+  api
+}
+
+model AppointmentAudit {
+  id              String   @id @default(cuid())
+  appointmentId   String   @map("appointment_id")
+  changedByUserId String?  @map("changed_by_user_id")
+  fromJson        Json?    @map("from_json")
+  toJson          Json     @map("to_json")
+  changedAt       DateTime @default(now()) @map("changed_at")
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  @@index([appointmentId, changedAt])
+  @@map("appointment_audit")
+}
+
+// ============================================
+// תשלומים (Payments)
+// ============================================
+
+model Payment {
+  id                String        @id @default(cuid())
+  businessId        String        @map("business_id")
+  appointmentId     String?       @map("appointment_id")
+  provider          String        @default("payplus")
+  externalPaymentId String?       @map("external_payment_id")
+  amountCents       Int           @map("amount_cents")
+  currency          String        @default("ILS")
+  status            PaymentStatusEnum
+  receiptUrl        String?       @map("receipt_url")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+
+  business    Business     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  appointment Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  @@index([businessId, status, createdAt])
+  @@map("payments")
+}
+
+enum PaymentStatusEnum {
+  initiated
+  authorized
+  captured
+  failed
+  refunded
+}
+
+// ============================================
+// התראות (Notifications)
+// ============================================
+
+model NotificationTemplate {
+  id         String              @id @default(cuid())
+  businessId String              @map("business_id")
+  channel    NotificationChannel
+  event      NotificationEvent
+  subject    String?
+  body       String
+  active     Boolean             @default(true)
+  createdAt  DateTime            @default(now()) @map("created_at")
+  updatedAt  DateTime            @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, channel, event])
+  @@map("notification_templates")
+}
+
+enum NotificationChannel {
+  email
+  sms
+  whatsapp
+}
+
+enum NotificationEvent {
+  booking_confirmed
+  booking_reminder
+  booking_canceled
+  booking_rescheduled
+  admin_new_booking
+}
+
+model Notification {
+  id                String              @id @default(cuid())
+  businessId        String              @map("business_id")
+  appointmentId     String?             @map("appointment_id")
+  customerId        String?             @map("customer_id")
+  channel           NotificationChannel
+  event             NotificationEvent
+  toAddress         String              @map("to_address")
+  status            NotificationStatus
+  providerMessageId String?             @map("provider_message_id")
+  sentAt            DateTime?           @map("sent_at")
+
+  business    Business     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  appointment Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  customer    Customer?    @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  @@index([businessId, event, status, sentAt])
+  @@map("notifications")
+}
+
+enum NotificationStatus {
+  queued
+  sent
+  failed
+}
+
+// התראות פנימיות לדשבורד
+model DashboardNotification {
+  id            String                   @id @default(cuid())
+  businessId    String                   @map("business_id")
+  appointmentId String?                  @map("appointment_id")
+  customerId    String?                  @map("customer_id")
+  type          DashboardNotificationType
+  title         String
+  message       String
+  read          Boolean                  @default(false)
+  createdAt     DateTime                 @default(now()) @map("created_at")
+
+  business    Business     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  appointment Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  customer    Customer?    @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  @@index([businessId, read, createdAt])
+  @@map("dashboard_notifications")
+}
+
+enum DashboardNotificationType {
+  new_appointment
+  cancelled_appointment
+  reminder
+  system
+}
+
+// ============================================
+// אינטגרציות (Integrations)
+// ============================================
+
+model Integration {
+  id              String            @id @default(cuid())
+  businessId      String            @map("business_id")
+  type            IntegrationType
+  credentialsJson Json              @map("credentials_json")
+  status          IntegrationStatus
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId, type])
+  @@map("integrations")
+}
+
+enum IntegrationType {
+  google_calendar
+  microsoft_outlook
+  apple_calendar
+  webhook
+}
+
+enum IntegrationStatus {
+  connected
+  error
+  disconnected
+}
+
+model Webhook {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id")
+  url        String
+  secret     String?
+  events     Json
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  business    Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  webhookLogs WebhookLog[]
+
+  @@index([businessId])
+  @@map("webhooks")
+}
+
+model WebhookLog {
+  id                String   @id @default(cuid())
+  webhookId         String   @map("webhook_id")
+  event             String
+  payloadJson       Json     @map("payload_json")
+  responseCode      Int?     @map("response_code")
+  error             String?
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  webhook Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId, createdAt])
+  @@map("webhook_logs")
+}
+
+// ============================================
+// עמודים ציבוריים ואנליטיקה (Public Pages & Analytics)
+// ============================================
+
+model PublicPage {
+  id          String   @id @default(cuid())
+  businessId  String   @map("business_id")
+  slug        String
+  title       String
+  description String?
+  themeJson   Json?    @map("theme_json")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, slug])
+  @@map("public_pages")
+}
+
+model EventTracking {
+  id         String            @id @default(cuid())
+  businessId String            @map("business_id")
+  sessionId  String            @map("session_id")
+  event      TrackingEventType
+  metaJson   Json?             @map("meta_json")
+  createdAt  DateTime          @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId, event, createdAt])
+  @@map("event_tracking")
+}
+
+enum TrackingEventType {
+  view
+  select_branch
+  select_service
+  select_staff
+  slot_selected
+  form_submitted
+  booking_confirmed
+}
+
