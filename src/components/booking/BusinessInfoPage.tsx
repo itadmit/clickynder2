@@ -59,6 +59,17 @@ export function BusinessInfoPage({ business, branches, services, staff }: Busine
           </div>
 
           <div className="p-8 md:p-12">
+            {/* Always show CTA first */}
+            <div className="mb-8">
+              <button
+                onClick={() => setShowBookingModal(true)}
+                className="w-full bg-gradient-to-r from-primary-600 to-primary-700 text-white py-6 px-8 rounded-xl text-xl font-bold hover:from-primary-700 hover:to-primary-800 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3 animate-pulse hover:animate-none"
+              >
+                <Calendar className="w-8 h-8" />
+                קבע תור עכשיו
+              </button>
+            </div>
+
             {/* Contact Information */}
             {(business.phone || business.email || business.address) && (
               <div className="mb-8">
@@ -129,15 +140,6 @@ export function BusinessInfoPage({ business, branches, services, staff }: Busine
                 </div>
               </div>
             )}
-
-            {/* CTA Button */}
-            <button
-              onClick={() => setShowBookingModal(true)}
-              className="w-full bg-gradient-to-r from-primary-600 to-primary-700 text-white py-5 px-8 rounded-xl text-xl font-bold hover:from-primary-700 hover:to-primary-800 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3"
-            >
-              <Calendar className="w-7 h-7" />
-              קבע תור עכשיו
-            </button>
           </div>
         </div>
       </div>
