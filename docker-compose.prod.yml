@@ -22,6 +22,9 @@ services:
       - clickynder-network
 
   app:
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: clickynder-app:latest
     container_name: clickynder_app
     restart: always
