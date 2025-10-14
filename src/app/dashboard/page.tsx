@@ -151,10 +151,10 @@ export default async function DashboardPage() {
           <p className="text-xs md:text-base mb-3 md:mb-4 opacity-90">שתף את הלינק עם הלקוחות</p>
           <div className="bg-white/10 rounded-lg p-2 md:p-4 flex items-center gap-2 min-w-0 overflow-hidden">
             <code className="text-xs truncate flex-1 min-w-0 break-all">
-              {`clickinder.co.il/${business.slug}/book`}
+              {`clickynder.com/${business.slug}/book`}
             </code>
             <div className="flex-shrink-0">
-              <CopyLinkButton url={`https://clickinder.co.il/${business.slug}/book`} />
+              <CopyLinkButton url={`https://clickynder.com/${business.slug}/book`} />
             </div>
           </div>
         </div>
