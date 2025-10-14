@@ -137,7 +137,7 @@ export async function POST(req: NextRequest) {
       });
 
       // יצירת עובד ראשון - בעל העסק עצמו
-      await prisma.staff.create({
+      const staff = await prisma.staff.create({
         data: {
           businessId: user.ownedBusinesses[0].id,
           name: validatedData.name,
@@ -146,6 +146,27 @@ export async function POST(req: NextRequest) {
           roleLabel: 'בעלים',
           active: true,
           calendarColor: '#0ea5e9', // כחול ברירת מחדל
+        },
+      });
+
+      // יצירת שירות ברירת מחדל
+      const service = await prisma.service.create({
+        data: {
+          businessId: user.ownedBusinesses[0].id,
+          name: 'שירות כללי',
+          durationMin: 60,
+          priceCents: 10000, // 100 ש"ח
+          bufferAfterMin: 0,
+          active: true,
+          color: '#0ea5e9',
+        },
+      });
+
+      // חיבור העובד לשירות
+      await prisma.serviceStaff.create({
+        data: {
+          serviceId: service.id,
+          staffId: staff.id,
         },
       });
 

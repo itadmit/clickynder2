@@ -67,11 +67,6 @@ const menuItems = [
     href: '/dashboard/subscription',
     icon: CreditCard,
   },
-  {
-    title: 'פרופיל',
-    href: '/dashboard/profile',
-    icon: User,
-  },
 ];
 
 interface SidebarProps {
