@@ -56,6 +56,7 @@ export async function PATCH(
       'name',
       'slug',
       'description',
+      'address',
       'phone',
       'email',
       'timezone',

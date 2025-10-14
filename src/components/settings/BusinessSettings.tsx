@@ -16,6 +16,7 @@ export function BusinessSettings({ business }: BusinessSettingsProps) {
   const [formData, setFormData] = useState({
     name: business.name,
     slug: business.slug,
+    address: business.address || '',
     timezone: business.timezone,
     currency: business.currency || 'ILS',
   });
@@ -117,6 +118,24 @@ export function BusinessSettings({ business }: BusinessSettingsProps) {
             </>
           )}
         </div>
+      </div>
+
+      {/* Business Address */}
+      <div>
+        <label htmlFor="address" className="form-label">
+          כתובת העסק
+        </label>
+        <input
+          id="address"
+          type="text"
+          value={formData.address}
+          onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
+          className="form-input"
+          placeholder="רחוב, מספר, עיר"
+        />
+        <p className="mt-1 text-sm text-gray-500">
+          כתובת זו תשמש כברירת מחדל לסניפים חדשים
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

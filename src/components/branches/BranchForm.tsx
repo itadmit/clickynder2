@@ -10,17 +10,19 @@ import Link from 'next/link';
 interface BranchFormProps {
   businessId: string;
   branch?: Branch;
+  businessAddress?: string;
 }
 
-export function BranchForm({ businessId, branch }: BranchFormProps) {
+export function BranchForm({ businessId, branch, businessAddress }: BranchFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: branch?.name || '',
-    address: branch?.address || '',
+    address: branch?.address || businessAddress || '',
     phone: branch?.phone || '',
     hasCustomHours: branch?.hasCustomHours || false,
     active: branch?.active ?? true,
+    isDefault: branch?.isDefault || false,
   });
 
   const handleChange = (
@@ -149,6 +151,25 @@ export function BranchForm({ businessId, branch }: BranchFormProps) {
               className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
             />
             <span className="text-sm font-medium">סניף פעיל</span>
+          </label>
+        </div>
+
+        {/* Default Branch */}
+        <div>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              name="isDefault"
+              checked={formData.isDefault}
+              onChange={handleChange}
+              className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
+            />
+            <div>
+              <span className="text-sm font-medium">סניף ברירת מחדל</span>
+              <p className="text-xs text-gray-500">
+                סניף זה יוצג כברירת מחדל בעת הזמנת תורים
+              </p>
+            </div>
           </label>
         </div>
 

@@ -40,6 +40,7 @@ model Business {
   name                  String
   slug                  String    @unique
   description           String?
+  address               String?
   phone                 String?
   email                 String?
   timezone              String    @default("Asia/Jerusalem")
@@ -203,6 +204,7 @@ model Branch {
   address          String?
   phone            String?
   active           Boolean   @default(true)
+  isDefault        Boolean   @default(false) @map("is_default")
   hasCustomHours   Boolean   @default(false) @map("has_custom_hours")
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")

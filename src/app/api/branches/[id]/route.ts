@@ -46,6 +46,30 @@ export async function PUT(
 
     const body = await req.json();
 
+    // Get the branch to find its businessId
+    const existingBranch = await prisma.branch.findUnique({
+      where: { id: params.id },
+      select: { businessId: true },
+    });
+
+    if (!existingBranch) {
+      return NextResponse.json({ error: 'Branch not found' }, { status: 404 });
+    }
+
+    // If this is set as default, unset all other defaults
+    if (body.isDefault) {
+      await prisma.branch.updateMany({
+        where: {
+          businessId: existingBranch.businessId,
+          deletedAt: null,
+          id: { not: params.id },
+        },
+        data: {
+          isDefault: false,
+        },
+      });
+    }
+
     const branch = await prisma.branch.update({
       where: { id: params.id },
       data: {
@@ -54,6 +78,7 @@ export async function PUT(
         phone: body.phone,
         hasCustomHours: body.hasCustomHours,
         active: body.active,
+        isDefault: body.isDefault,
       },
     });
 

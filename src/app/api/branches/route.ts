@@ -17,6 +17,7 @@ const branchSchema = z.object({
   phone: z.string().optional(),
   hasCustomHours: z.boolean().default(false),
   active: z.boolean().default(true),
+  isDefault: z.boolean().default(false),
 });
 
 export async function GET(req: NextRequest) {
@@ -65,6 +66,19 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const validatedData = branchSchema.parse(body);
+
+    // If this is set as default, unset all other defaults
+    if (validatedData.isDefault) {
+      await prisma.branch.updateMany({
+        where: {
+          businessId: validatedData.businessId,
+          deletedAt: null,
+        },
+        data: {
+          isDefault: false,
+        },
+      });
+    }
 
     const branch = await prisma.branch.create({
       data: validatedData,

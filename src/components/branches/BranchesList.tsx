@@ -93,11 +93,18 @@ export function BranchesList({ branches }: BranchesListProps) {
                 {branch.name}
               </h3>
             </div>
-            {branch.hasCustomHours && (
-              <span className="inline-block px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded">
-                שעות מותאמות
-              </span>
-            )}
+            <div className="flex gap-2">
+              {branch.isDefault && (
+                <span className="inline-block px-2 py-1 text-xs bg-green-50 text-green-700 rounded font-medium">
+                  ברירת מחדל
+                </span>
+              )}
+              {branch.hasCustomHours && (
+                <span className="inline-block px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded">
+                  שעות מותאמות
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Branch Details */}
