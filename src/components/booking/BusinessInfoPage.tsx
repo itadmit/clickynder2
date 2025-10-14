@@ -1,15 +1,16 @@
 'use client';
 
-import { Business, Branch, Service, Staff, BusinessHours } from '@prisma/client';
+import { Business, Branch, Service, Staff, BusinessHours, ServiceCategory } from '@prisma/client';
 import { ModernTemplate } from './templates/ModernTemplate';
 import { ClassicTemplate } from './templates/ClassicTemplate';
 import { MinimalTemplate } from './templates/MinimalTemplate';
+import type { StaffWithServices } from './BookingFlow';
 
 interface BusinessInfoPageProps {
   business: Business & {
     branches: Branch[];
-    services: Service[];
-    staff: Staff[];
+    services: (Service & { category: ServiceCategory | null })[];
+    staff: StaffWithServices[];
     businessHours: BusinessHours[];
   };
 }

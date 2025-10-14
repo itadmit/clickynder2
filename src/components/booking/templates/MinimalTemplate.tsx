@@ -1,15 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { Business, Branch, Service, Staff, BusinessHours } from '@prisma/client';
+import { Business, Branch, Service, Staff, BusinessHours, ServiceCategory } from '@prisma/client';
 import { Phone, Mail, MapPin, Clock, Calendar, ArrowLeft, ArrowRight } from 'lucide-react';
 import { BookingFlow } from '../BookingFlow';
+import type { StaffWithServices } from '../BookingFlow';
 
 interface MinimalTemplateProps {
   business: Business & {
     branches: Branch[];
-    services: Service[];
-    staff: Staff[];
+    services: (Service & { category: ServiceCategory | null })[];
+    staff: StaffWithServices[];
     businessHours: BusinessHours[];
   };
 }
@@ -94,14 +95,16 @@ export function MinimalTemplate({ business }: MinimalTemplateProps) {
                       <div className="flex items-center justify-between pt-4 border-t">
                         <div className="flex items-center gap-2 text-gray-600">
                           <Clock className="w-5 h-5" />
-                          <span className="font-bold">{service.duration}'</span>
+                          <span className="font-bold">{service.durationMin}'</span>
                         </div>
-                        <span 
-                          className="text-3xl font-black"
-                          style={{ color: primaryColor }}
-                        >
-                          ₪{service.price}
-                        </span>
+                        {service.priceCents && (
+                          <span 
+                            className="text-3xl font-black"
+                            style={{ color: primaryColor }}
+                          >
+                            ₪{(service.priceCents / 100).toFixed(0)}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -124,33 +127,17 @@ export function MinimalTemplate({ business }: MinimalTemplateProps) {
                       setShowBookingModal(true);
                     }}
                   >
-                    {staff.avatarUrl ? (
-                      <div className="relative aspect-[3/4] rounded-3xl overflow-hidden mb-4 shadow-xl">
-                        <img
-                          src={staff.avatarUrl}
-                          alt={staff.name}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                        />
-                        <div 
-                          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                          style={{
-                            background: `linear-gradient(0deg, ${primaryColor}dd 0%, transparent 50%)`
-                          }}
-                        ></div>
-                      </div>
-                    ) : (
-                      <div 
-                        className="aspect-[3/4] rounded-3xl mb-4 shadow-xl flex items-center justify-center text-white text-5xl font-black"
-                        style={{
-                          background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`
-                        }}
-                      >
-                        {staff.name.charAt(0)}
-                      </div>
-                    )}
+                    <div 
+                      className="aspect-[3/4] rounded-3xl mb-4 shadow-xl flex items-center justify-center text-white text-5xl font-black"
+                      style={{
+                        background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`
+                      }}
+                    >
+                      {staff.name.charAt(0)}
+                    </div>
                     <h3 className="text-xl font-bold text-gray-900 text-center">{staff.name}</h3>
-                    {staff.title && (
-                      <p className="text-sm text-gray-600 text-center">{staff.title}</p>
+                    {staff.roleLabel && (
+                      <p className="text-sm text-gray-600 text-center">{staff.roleLabel}</p>
                     )}
                   </div>
                 ))}
@@ -167,13 +154,7 @@ export function MinimalTemplate({ business }: MinimalTemplateProps) {
           >
             <div className="p-12 text-center text-white">
               <h2 className="text-4xl font-black mb-6">בואו לבקר אותנו</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                {business.address && (
-                  <div className="flex flex-col items-center gap-2">
-                    <MapPin className="w-8 h-8" />
-                    <span className="text-lg font-bold">{business.address}</span>
-                  </div>
-                )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 {business.phone && (
                   <div className="flex flex-col items-center gap-2">
                     <Phone className="w-8 h-8" />

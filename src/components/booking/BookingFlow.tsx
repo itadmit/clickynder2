@@ -11,11 +11,11 @@ import { CustomerForm } from './steps/CustomerForm';
 import { BookingSummary } from './steps/BookingSummary';
 import { SuccessScreen } from './steps/SuccessScreen';
 
-type ServiceWithCategory = Service & {
+export type ServiceWithCategory = Service & {
   category: ServiceCategory | null;
 };
 
-type StaffWithServices = Staff & {
+export type StaffWithServices = Staff & {
   serviceStaff: (ServiceStaff & {
     service: Service;
   })[];

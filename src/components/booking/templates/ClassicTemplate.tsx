@@ -1,15 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { Business, Branch, Service, Staff, BusinessHours } from '@prisma/client';
+import { Business, Branch, Service, Staff, BusinessHours, ServiceCategory } from '@prisma/client';
 import { Phone, Mail, MapPin, Clock, Calendar, DollarSign, User, Building2, ArrowLeft } from 'lucide-react';
 import { BookingFlow } from '../BookingFlow';
+import type { ServiceWithCategory, StaffWithServices } from '../BookingFlow';
 
 interface ClassicTemplateProps {
   business: Business & {
     branches: Branch[];
-    services: Service[];
-    staff: Staff[];
+    services: (Service & { category: ServiceCategory | null })[];
+    staff: StaffWithServices[];
     businessHours: BusinessHours[];
   };
 }
@@ -25,7 +26,9 @@ export function ClassicTemplate({ business }: ClassicTemplateProps) {
       if (!hoursMap[bh.weekday]) {
         hoursMap[bh.weekday] = [];
       }
-      hoursMap[bh.weekday].push(`${bh.openTime.substring(0, 5)} - ${bh.closeTime.substring(0, 5)}`);
+      if (bh.openTime && bh.closeTime) {
+        hoursMap[bh.weekday].push(`${bh.openTime.substring(0, 5)} - ${bh.closeTime.substring(0, 5)}`);
+      }
     });
 
     return daysOfWeek.map((dayName, index) => {
@@ -66,26 +69,15 @@ export function ClassicTemplate({ business }: ClassicTemplateProps) {
               </div>
 
               {/* Info Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                {business.address && (
-                  <div className="flex items-start gap-2">
-                    <Building2 className="w-4 h-4 text-gray-500 mt-0.5" />
-                    <div>
-                      <div className="text-xs text-gray-500">מיקום</div>
-                      <div className="text-sm font-medium text-gray-900">{business.address}</div>
-                    </div>
+              {business.phone && (
+                <div className="flex items-start gap-2">
+                  <Phone className="w-4 h-4 text-gray-500 mt-0.5" />
+                  <div>
+                    <div className="text-xs text-gray-500">טלפון</div>
+                    <div className="text-sm font-medium text-gray-900">{business.phone}</div>
                   </div>
-                )}
-                {business.phone && (
-                  <div className="flex items-start gap-2">
-                    <Phone className="w-4 h-4 text-gray-500 mt-0.5" />
-                    <div>
-                      <div className="text-xs text-gray-500">טלפון</div>
-                      <div className="text-sm font-medium text-gray-900">{business.phone}</div>
-                    </div>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -105,7 +97,9 @@ export function ClassicTemplate({ business }: ClassicTemplateProps) {
                   >
                     <div className="flex items-start justify-between mb-2">
                       <h3 className="font-bold text-gray-900">{service.name}</h3>
-                      <span className="text-lg font-bold text-gray-900">₪{service.price}</span>
+                      {service.priceCents && (
+                        <span className="text-lg font-bold text-gray-900">₪{(service.priceCents / 100).toFixed(0)}</span>
+                      )}
                     </div>
                     {service.description && (
                       <p className="text-sm text-gray-600 mb-3">{service.description}</p>
@@ -113,7 +107,7 @@ export function ClassicTemplate({ business }: ClassicTemplateProps) {
                     <div className="flex items-center gap-4 text-xs text-gray-500">
                       <div className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
-                        <span>{service.duration} דקות</span>
+                        <span>{service.durationMin} דקות</span>
                       </div>
                     </div>
                   </div>
@@ -132,21 +126,13 @@ export function ClassicTemplate({ business }: ClassicTemplateProps) {
               <div className="space-y-3">
                 {business.staff.map((staff) => (
                   <div key={staff.id} className="flex items-center gap-4 p-3 border border-gray-200 rounded-lg">
-                    {staff.avatarUrl ? (
-                      <img
-                        src={staff.avatarUrl}
-                        alt={staff.name}
-                        className="w-14 h-14 rounded-lg object-cover"
-                      />
-                    ) : (
-                      <div className="w-14 h-14 rounded-lg bg-gray-200 flex items-center justify-center text-gray-600 text-lg font-bold">
-                        {staff.name.charAt(0)}
-                      </div>
-                    )}
+                    <div className="w-14 h-14 rounded-lg bg-gray-200 flex items-center justify-center text-gray-600 text-lg font-bold">
+                      {staff.name.charAt(0)}
+                    </div>
                     <div>
                       <h3 className="font-bold text-gray-900">{staff.name}</h3>
-                      {staff.title && (
-                        <p className="text-sm text-gray-600">{staff.title}</p>
+                      {staff.roleLabel && (
+                        <p className="text-sm text-gray-600">{staff.roleLabel}</p>
                       )}
                     </div>
                   </div>

@@ -1,15 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { Business, Branch, Service, Staff, BusinessHours } from '@prisma/client';
+import { Business, Branch, Service, Staff, BusinessHours, ServiceCategory } from '@prisma/client';
 import { Phone, Mail, MapPin, Clock, Calendar, Star, ArrowLeft } from 'lucide-react';
 import { BookingFlow } from '../BookingFlow';
+import type { StaffWithServices } from '../BookingFlow';
 
 interface ModernTemplateProps {
   business: Business & {
     branches: Branch[];
-    services: Service[];
-    staff: Staff[];
+    services: (Service & { category: ServiceCategory | null })[];
+    staff: StaffWithServices[];
     businessHours: BusinessHours[];
   };
 }
@@ -65,13 +66,7 @@ export function ModernTemplate({ business }: ModernTemplateProps) {
                 
                 {/* Quick Info */}
                 <div className="flex flex-wrap gap-4">
-                  {business.address && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <MapPin className="w-4 h-4 text-primary-600" />
-                      <span>{business.address}</span>
-                    </div>
-                  )}
-                  {business.businessHours?.[0] && (
+                  {business.businessHours?.[0]?.openTime && business.businessHours[0].closeTime && (
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Clock className="w-4 h-4 text-primary-600" />
                       <span>שעות פעילות: {business.businessHours[0].openTime.substring(0, 5)} - {business.businessHours[0].closeTime.substring(0, 5)}</span>
@@ -100,9 +95,11 @@ export function ModernTemplate({ business }: ModernTemplateProps) {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-primary-600">
                         <Clock className="w-4 h-4" />
-                        <span className="text-sm font-medium">{service.duration} דקות</span>
+                        <span className="text-sm font-medium">{service.durationMin} דקות</span>
                       </div>
-                      <span className="text-lg font-bold text-gray-900">₪{service.price}</span>
+                      {service.priceCents && (
+                        <span className="text-lg font-bold text-gray-900">₪{(service.priceCents / 100).toFixed(0)}</span>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -120,20 +117,12 @@ export function ModernTemplate({ business }: ModernTemplateProps) {
                     key={staff.id}
                     className="bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-xl transition-shadow"
                   >
-                    {staff.avatarUrl ? (
-                      <img
-                        src={staff.avatarUrl}
-                        alt={staff.name}
-                        className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-primary-100"
-                      />
-                    ) : (
-                      <div className="w-24 h-24 rounded-full mx-auto mb-4 bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-2xl font-bold border-4 border-primary-100">
-                        {staff.name.charAt(0)}
-                      </div>
-                    )}
+                    <div className="w-24 h-24 rounded-full mx-auto mb-4 bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-2xl font-bold border-4 border-primary-100">
+                      {staff.name.charAt(0)}
+                    </div>
                     <h3 className="font-bold text-lg text-gray-900">{staff.name}</h3>
-                    {staff.title && (
-                      <p className="text-sm text-gray-600">{staff.title}</p>
+                    {staff.roleLabel && (
+                      <p className="text-sm text-gray-600">{staff.roleLabel}</p>
                     )}
                   </div>
                 ))}
