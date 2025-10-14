@@ -350,8 +350,11 @@ function replaceTemplateVariables(template: string, variables: TemplateVariables
 
   for (const [key, value] of Object.entries(variables)) {
     if (value !== undefined) {
-      const regex = new RegExp(`{{\\s*${key}\\s*}}`, 'g');
-      result = result.replace(regex, value);
+      // תמיכה בשני פורמטים: {variable} ו-{{variable}}
+      const regex1 = new RegExp(`{\\s*${key}\\s*}`, 'g');
+      const regex2 = new RegExp(`{{\\s*${key}\\s*}}`, 'g');
+      result = result.replace(regex1, value);
+      result = result.replace(regex2, value);
     }
   }
 

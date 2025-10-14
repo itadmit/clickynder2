@@ -76,9 +76,55 @@ fi
 echo -e "${GREEN}✅ Image loaded on server${NC}"
 echo ""
 
-# Step 6: Pull Git Changes and Restart
-echo -e "${BLUE}🎬 Step 6/6: Pulling Git changes and restarting...${NC}"
-ssh ${REMOTE_HOST} "cd ${REMOTE_PATH} && sudo git pull origin main && sudo docker compose -f docker-compose.prod.yml up -d app"
+# Step 6: Pull Git Changes and Run Migrations
+echo -e "${BLUE}🎬 Step 6/7: Pulling Git changes and running migrations...${NC}"
+ssh ${REMOTE_HOST} "cd ${REMOTE_PATH} && sudo git pull origin main"
+
+if [ $? -ne 0 ]; then
+    echo -e "${RED}❌ Failed to pull changes!${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}✅ Git changes pulled${NC}"
+echo ""
+
+# Step 7: Run Database Migrations
+echo -e "${BLUE}🗃️  Step 7/7: Running database migrations...${NC}"
+ssh ${REMOTE_HOST} << 'ENDSSH'
+# Get database credentials from .env.production
+DB_USER=$(grep DATABASE_URL /home/clickynder/app/.env.production | sed -n 's/.*postgresql:\/\/\([^:]*\):.*/\1/p')
+DB_NAME=$(grep DATABASE_URL /home/clickynder/app/.env.production | sed -n 's/.*\/\([^?]*\).*/\1/p')
+
+# Check for new migrations in the prisma/migrations directory
+cd /home/clickynder/app
+for migration_dir in prisma/migrations/*/; do
+    if [ -d "$migration_dir" ]; then
+        migration_name=$(basename "$migration_dir")
+        migration_file="${migration_dir}migration.sql"
+        
+        if [ -f "$migration_file" ]; then
+            # Check if migration already applied
+            already_applied=$(sudo docker exec clickynder_db psql -U "$DB_USER" -d "$DB_NAME" -tAc "SELECT COUNT(*) FROM _prisma_migrations WHERE migration_name = '$migration_name';")
+            
+            if [ "$already_applied" = "0" ]; then
+                echo "Applying migration: $migration_name"
+                # Apply the migration
+                sudo docker exec -i clickynder_db psql -U "$DB_USER" -d "$DB_NAME" < "$migration_file"
+                
+                # Record in _prisma_migrations table
+                sudo docker exec clickynder_db psql -U "$DB_USER" -d "$DB_NAME" -c "INSERT INTO _prisma_migrations (id, checksum, finished_at, migration_name, logs, rolled_back_at, started_at, applied_steps_count) VALUES (gen_random_uuid(), '$(sha256sum "$migration_file" | cut -d' ' -f1)', NOW(), '$migration_name', NULL, NULL, NOW(), 1) ON CONFLICT DO NOTHING;"
+            fi
+        fi
+    fi
+done
+ENDSSH
+
+echo -e "${GREEN}✅ Migrations completed${NC}"
+echo ""
+
+# Step 8: Restart Application
+echo -e "${BLUE}♻️  Restarting application...${NC}"
+ssh ${REMOTE_HOST} "cd ${REMOTE_PATH} && sudo docker compose -f docker-compose.prod.yml up -d app"
 
 if [ $? -ne 0 ]; then
     echo -e "${RED}❌ Failed to restart application!${NC}"

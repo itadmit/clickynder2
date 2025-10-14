@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
-import { BusinessInfoPage } from '@/components/booking/BusinessInfoPage';
-import { AlertCircle, Settings, Phone, Mail } from 'lucide-react';
+import { BookingFlow } from '@/components/booking/BookingFlow';
+import { AlertCircle, Settings } from 'lucide-react';
 
 interface BookingPageProps {
   params: {
@@ -63,12 +63,36 @@ export default async function BookingPage({ params }: BookingPageProps) {
 
   return (
     <div 
-      className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-blue-100"
+      className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-blue-100 relative"
       style={{ 
         fontFamily: business.font || "'Noto Sans Hebrew', sans-serif"
       }}
     >
-      {/* Main Content */}
+
+      {/* Header - Transparent */}
+      <header className="py-4 px-4 sticky top-0 z-50 backdrop-blur-lg shadow-md bg-blue-500/70">
+        <div className="container mx-auto max-w-5xl">
+          <div className="flex items-center justify-center gap-4">
+            {business.logoUrl && (
+              <img 
+                src={business.logoUrl} 
+                alt={business.name}
+                className="h-12 w-12 object-contain rounded-lg bg-white/90 p-2"
+              />
+            )}
+            <div className="text-white text-center">
+              <h1 className="text-xl md:text-2xl font-bold">{business.name}</h1>
+              {business.description && (
+                <p className="text-xs md:text-sm opacity-90 mt-0.5">
+                  {business.description}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Booking Flow */}
       <main className="container mx-auto max-w-5xl px-4 py-8">
         {!isReady ? (
           <div className="bg-white rounded-lg shadow-lg p-8 md:p-12 text-center max-w-2xl mx-auto">
@@ -143,7 +167,12 @@ export default async function BookingPage({ params }: BookingPageProps) {
             )}
           </div>
         ) : (
-          <BusinessInfoPage business={business} />
+          <BookingFlow
+            business={business}
+            branches={business.branches}
+            services={business.services}
+            staff={business.staff}
+          />
         )}
       </main>
 
