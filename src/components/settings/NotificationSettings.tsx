@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { NotificationTemplate } from '@prisma/client';
-import { Mail, MessageSquare, Phone } from 'lucide-react';
+import { Mail, MessageSquare, Phone, Edit2, Eye, Save, X, Check, Power, EyeOff } from 'lucide-react';
 
 interface NotificationSettingsProps {
   businessId: string;
@@ -10,58 +10,151 @@ interface NotificationSettingsProps {
 }
 
 export function NotificationSettings({ businessId, templates }: NotificationSettingsProps) {
-  const [selectedChannel, setSelectedChannel] = useState<'email' | 'sms' | 'whatsapp'>('whatsapp');
+  const [editingTemplate, setEditingTemplate] = useState<string | null>(null);
+  const [editedSubject, setEditedSubject] = useState('');
+  const [editedBody, setEditedBody] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [localTemplates, setLocalTemplates] = useState(templates);
+  const [creatingDefaults, setCreatingDefaults] = useState(false);
+  const [previewingTemplate, setPreviewingTemplate] = useState<string | null>(null);
 
-  const channelTemplates = templates.filter((t) => t.channel === selectedChannel);
+  // רק תבניות WhatsApp
+  const whatsappTemplates = localTemplates.filter((t) => t.channel === 'whatsapp');
+
+  const startEditing = (template: NotificationTemplate) => {
+    setEditingTemplate(template.id);
+    setEditedSubject(template.subject || '');
+    setEditedBody(template.body);
+    setShowPreview(false);
+  };
+
+  const cancelEditing = () => {
+    setEditingTemplate(null);
+    setEditedSubject('');
+    setEditedBody('');
+    setShowPreview(false);
+  };
+
+  const saveTemplate = async (templateId: string) => {
+    setSaving(true);
+    try {
+      const response = await fetch(`/api/notifications/templates/${templateId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subject: editedSubject || null,
+          body: editedBody,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to save template');
+
+      const updatedTemplate = await response.json();
+      setLocalTemplates((prev) =>
+        prev.map((t) => (t.id === templateId ? updatedTemplate : t))
+      );
+
+      cancelEditing();
+      alert('התבנית נשמרה בהצלחה! ✅');
+    } catch (error) {
+      console.error('Error saving template:', error);
+      alert('שגיאה בשמירת התבנית');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const toggleTemplateActive = async (templateId: string, currentActive: boolean) => {
+    try {
+      const response = await fetch(`/api/notifications/templates/${templateId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          active: !currentActive,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to toggle template');
+
+      const updatedTemplate = await response.json();
+      setLocalTemplates((prev) =>
+        prev.map((t) => (t.id === templateId ? updatedTemplate : t))
+      );
+    } catch (error) {
+      console.error('Error toggling template:', error);
+      alert('שגיאה בשינוי סטטוס התבנית');
+    }
+  };
+
+  const createDefaultTemplates = async () => {
+    setCreatingDefaults(true);
+    try {
+      const response = await fetch('/api/notifications/templates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ businessId }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create templates');
+      }
+
+      const result = await response.json();
+      setLocalTemplates(result.templates);
+      alert(`נוצרו ${result.count} תבניות ברירת מחדל בהצלחה! ✅`);
+    } catch (error: any) {
+      console.error('Error creating default templates:', error);
+      alert(error.message || 'שגיאה ביצירת תבניות');
+    } finally {
+      setCreatingDefaults(false);
+    }
+  };
+
+  const getPreviewText = (text: string) => {
+    const exampleData = {
+      '{customer_name}': 'ישראל ישראלי',
+      '{business_name}': 'העסק שלי',
+      '{service_name}': 'תספורת גברים',
+      '{staff_name}': 'דני המספר',
+      '{appointment_date}': '15/10/2025',
+      '{appointment_time}': '10:00',
+      '{confirmation_code}': 'ABC123',
+    };
+
+    let preview = text;
+    Object.entries(exampleData).forEach(([key, value]) => {
+      preview = preview.replace(new RegExp(key.replace(/[{}]/g, '\\$&'), 'g'), value);
+    });
+
+    return preview;
+  };
+
+  const togglePreview = (templateId: string) => {
+    if (previewingTemplate === templateId) {
+      setPreviewingTemplate(null);
+    } else {
+      setPreviewingTemplate(templateId);
+    }
+  };
 
   return (
     <div className="space-y-6">
-      {/* Channel Tabs */}
-      <div className="flex gap-2 border-b border-gray-200">
-        <button
-          onClick={() => setSelectedChannel('whatsapp')}
-          className={`
-            flex items-center gap-2 px-4 py-2 border-b-2 transition-colors
-            ${
-              selectedChannel === 'whatsapp'
-                ? 'border-primary-600 text-primary-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
-            }
-          `}
-        >
-          <MessageSquare className="w-5 h-5" />
-          <span>WhatsApp</span>
-        </button>
-
-        <button
-          onClick={() => setSelectedChannel('sms')}
-          className={`
-            flex items-center gap-2 px-4 py-2 border-b-2 transition-colors
-            ${
-              selectedChannel === 'sms'
-                ? 'border-primary-600 text-primary-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
-            }
-          `}
-        >
-          <Phone className="w-5 h-5" />
-          <span>SMS</span>
-        </button>
-
-        <button
-          onClick={() => setSelectedChannel('email')}
-          className={`
-            flex items-center gap-2 px-4 py-2 border-b-2 transition-colors
-            ${
-              selectedChannel === 'email'
-                ? 'border-primary-600 text-primary-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
-            }
-          `}
-        >
-          <Mail className="w-5 h-5" />
-          <span>אימייל</span>
-        </button>
+      {/* Channel Info - WhatsApp Only */}
+      <div className="flex items-center gap-3 p-4 bg-green-50 border-2 border-green-200 rounded-lg">
+        <div className="flex items-center justify-center w-12 h-12 bg-green-500 rounded-full">
+          <MessageSquare className="w-6 h-6 text-white" />
+        </div>
+        <div className="flex-1">
+          <h3 className="font-bold text-green-900">הודעות WhatsApp דרך RappelSend</h3>
+          <p className="text-sm text-green-700">
+            נהל את תבניות ההודעות שנשלחות ללקוחות שלך בוואטסאפ
+          </p>
+        </div>
+        <div className="text-xs text-green-600 bg-green-100 px-3 py-1 rounded-full font-medium">
+          פעיל
+        </div>
       </div>
 
       {/* Templates Info */}
@@ -71,48 +164,256 @@ export function NotificationSettings({ businessId, templates }: NotificationSett
           {' {service_name}'}, {'{staff_name}'}, {'{appointment_date}'}, 
           {'{appointment_time}'}, {'{confirmation_code}'}
         </p>
+        <p className="text-xs text-blue-600 mt-2">
+          💡 טיפ: השתמש במשתנים אלה בתבניות שלך - הם יוחלפו אוטומטית בנתונים אמיתיים בעת שליחת ההודעה
+        </p>
       </div>
 
       {/* Template List */}
-      {channelTemplates.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          <p>אין תבניות התראה עבור ערוץ זה</p>
-          <p className="text-sm mt-2">תבניות יווצרו אוטומטית בשימוש ראשון</p>
+      {whatsappTemplates.length === 0 ? (
+        <div className="text-center py-12 text-gray-500">
+          <div className="max-w-md mx-auto bg-white p-8 rounded-xl border-2 border-dashed border-gray-300">
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                <MessageSquare className="w-8 h-8 text-green-600" />
+              </div>
+            </div>
+            <p className="text-lg font-medium mb-2 text-gray-900">אין תבניות WhatsApp</p>
+            <p className="text-sm mb-6 text-gray-600">
+              התבניות נוצרות אוטומטית בעת יצירת חשבון חדש.
+              <br />
+              נראה שיש בעיה - צור תבניות ברירת מחדל עכשיו.
+            </p>
+            <div className="relative group inline-block">
+              <button
+                onClick={createDefaultTemplates}
+                disabled={creatingDefaults}
+                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg"
+              >
+                {creatingDefaults ? 'יוצר תבניות...' : '🎨 צור 5 תבניות WhatsApp'}
+              </button>
+              {!creatingDefaults && (
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                  יצירת 5 תבניות מוכנות לשימוש - ניתן לערוך לאחר מכן
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       ) : (
         <div className="space-y-4">
-          {channelTemplates.map((template) => (
-            <div key={template.id} className="p-4 border border-gray-200 rounded-lg">
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <h4 className="font-medium">{getEventLabel(template.event)}</h4>
-                  <span
-                    className={`text-xs px-2 py-1 rounded ${
-                      template.active
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-600'
-                    }`}
-                  >
-                    {template.active ? 'פעיל' : 'לא פעיל'}
-                  </span>
-                </div>
-              </div>
+          {whatsappTemplates.map((template) => {
+            const isEditing = editingTemplate === template.id;
 
-              {template.subject && (
-                <div className="mb-2">
-                  <p className="text-xs text-gray-600">נושא:</p>
-                  <p className="text-sm">{template.subject}</p>
-                </div>
-              )}
+            return (
+              <div
+                key={template.id}
+                className={`p-4 border rounded-lg transition-all ${
+                  isEditing
+                    ? 'border-primary-500 bg-primary-50/30 shadow-md'
+                    : 'border-gray-200 bg-white'
+                }`}
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex items-center gap-3">
+                    <h4 className="font-medium text-lg">{getEventLabel(template.event)}</h4>
+                    <span
+                      className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${
+                        template.active
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}
+                    >
+                      <Check className="w-3 h-3" />
+                      {template.active ? 'פעיל' : 'לא פעיל'}
+                    </span>
+                  </div>
 
-              <div>
-                <p className="text-xs text-gray-600">תוכן:</p>
-                <p className="text-sm whitespace-pre-wrap bg-gray-50 p-2 rounded">
-                  {template.body}
-                </p>
+                  {!isEditing && (
+                    <div className="flex gap-2">
+                      {/* Preview Button */}
+                      <div className="relative group">
+                        <button
+                          onClick={() => togglePreview(template.id)}
+                          className="p-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors"
+                        >
+                          {previewingTemplate === template.id ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </button>
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                          {previewingTemplate === template.id ? 'הסתר תצוגה מקדימה' : 'הצג תצוגה מקדימה עם דוגמאות'}
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                        </div>
+                      </div>
+
+                      {/* Toggle Active Button */}
+                      <div className="relative group">
+                        <button
+                          onClick={() => toggleTemplateActive(template.id, template.active)}
+                          className={`p-2 rounded-lg transition-colors ${
+                            template.active
+                              ? 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                              : 'bg-green-100 hover:bg-green-200 text-green-600'
+                          }`}
+                        >
+                          <Power className="w-4 h-4" />
+                        </button>
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                          {template.active ? 'השבת תבנית - לא ישלחו הודעות' : 'הפעל תבנית - תתחיל לשלוח הודעות'}
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                        </div>
+                      </div>
+
+                      {/* Edit Button */}
+                      <div className="relative group">
+                        <button
+                          onClick={() => startEditing(template)}
+                          className="p-2 bg-primary-100 hover:bg-primary-200 text-primary-600 rounded-lg transition-colors"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                          ערוך תוכן התבנית והתאם אישית
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {isEditing ? (
+                  <div className="space-y-4">
+                    {/* Body Field - WhatsApp only */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        תוכן ההודעה
+                      </label>
+                      <textarea
+                        value={editedBody}
+                        onChange={(e) => setEditedBody(e.target.value)}
+                        rows={6}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono text-sm"
+                        placeholder="כתוב את תוכן ההודעה כאן..."
+                        dir="rtl"
+                      />
+                    </div>
+
+                    {/* Preview Toggle */}
+                    <div className="relative group inline-block">
+                      <button
+                        onClick={() => setShowPreview(!showPreview)}
+                        className="flex items-center gap-2 text-sm text-primary-600 hover:text-primary-700 transition-colors"
+                      >
+                        <Eye className="w-4 h-4" />
+                        {showPreview ? 'הסתר תצוגה מקדימה' : 'הצג תצוגה מקדימה'}
+                      </button>
+                      <div className="absolute bottom-full left-0 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                        ראה איך ההודעה תיראה עם נתונים אמיתיים
+                        <div className="absolute top-full left-4 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                      </div>
+                    </div>
+
+                    {/* Preview Box */}
+                    {showPreview && (
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                        <p className="text-xs text-gray-600 mb-2 font-medium">
+                          תצוגה מקדימה (עם דוגמאות):
+                        </p>
+                        <div className="bg-white p-3 rounded border border-gray-200">
+                          {editedSubject && (
+                            <p className="font-semibold mb-2 text-gray-900">
+                              {editedSubject.replace(/{([^}]+)}/g, (_, key) => {
+                                const examples: Record<string, string> = {
+                                  customer_name: 'ישראל ישראלי',
+                                  business_name: 'העסק שלי',
+                                  service_name: 'תספורת גברים',
+                                  staff_name: 'דני המספר',
+                                  appointment_date: '15/10/2025',
+                                  appointment_time: '10:00',
+                                  confirmation_code: 'ABC123',
+                                };
+                                return examples[key] || `{${key}}`;
+                              })}
+                            </p>
+                          )}
+                          <p className="whitespace-pre-wrap text-sm text-gray-800">
+                            {getPreviewText(editedBody)}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2 pt-2">
+                      {/* Save Button */}
+                      <div className="relative group">
+                        <button
+                          onClick={() => saveTemplate(template.id)}
+                          disabled={saving || !editedBody.trim()}
+                          className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <Save className="w-4 h-4" />
+                          {saving ? 'שומר...' : 'שמור שינויים'}
+                        </button>
+                        {!saving && editedBody.trim() && (
+                          <div className="absolute bottom-full left-0 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                            שמור את השינויים - התבנית המעודכנת תשלח ללקוחות
+                            <div className="absolute top-full left-4 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Cancel Button */}
+                      <div className="relative group">
+                        <button
+                          onClick={cancelEditing}
+                          disabled={saving}
+                          className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                          ביטול
+                        </button>
+                        {!saving && (
+                          <div className="absolute bottom-full right-0 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                            בטל עריכה וחזור לתצוגה הרגילה
+                            <div className="absolute top-full right-4 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">תוכן הודעת WhatsApp:</p>
+                      <p className="text-sm whitespace-pre-wrap bg-gray-50 p-3 rounded border border-gray-200 text-gray-800">
+                        {template.body}
+                      </p>
+                    </div>
+
+                    {/* Preview for non-editing mode */}
+                    {previewingTemplate === template.id && (
+                      <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-4">
+                        <p className="text-xs text-green-700 mb-2 font-medium flex items-center gap-2">
+                          <Eye className="w-3 h-3" />
+                          תצוגה מקדימה (עם דוגמאות):
+                        </p>
+                        <div className="bg-white p-3 rounded border border-green-200">
+                          <p className="whitespace-pre-wrap text-sm text-gray-800">
+                            {getPreviewText(template.body)}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

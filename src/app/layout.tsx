@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: 'Clickinder - מערכת ניהול תורים לעסקים',
   description: 'פלטפורמת תזמון תורים מתקדמת לעסקים בישראל',
   keywords: ['תורים', 'הזמנות', 'ניהול עסק', 'קביעת תור'],
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({

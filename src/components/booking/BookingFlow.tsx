@@ -26,6 +26,8 @@ interface BookingFlowProps {
   branches: Branch[];
   services: ServiceWithCategory[];
   staff: StaffWithServices[];
+  onBookingSuccess?: () => void;
+  initialStaffId?: string;
 }
 
 type BookingStep = 
@@ -50,11 +52,13 @@ interface BookingData {
   confirmationCode?: string;
 }
 
-export function BookingFlow({ business, branches, services, staff }: BookingFlowProps) {
+export function BookingFlow({ business, branches, services, staff, onBookingSuccess, initialStaffId }: BookingFlowProps) {
   const [currentStep, setCurrentStep] = useState<BookingStep>(
     branches.length > 1 ? 'branch' : 'service'
   );
-  const [bookingData, setBookingData] = useState<BookingData>({});
+  const [bookingData, setBookingData] = useState<BookingData>(
+    initialStaffId ? { staffId: initialStaffId } : {}
+  );
 
   const steps: BookingStep[] = [
     ...(branches.length > 1 ? ['branch' as const] : []),
@@ -223,6 +227,7 @@ export function BookingFlow({ business, branches, services, staff }: BookingFlow
                 const result = await response.json();
                 updateBookingData({ confirmationCode: result.confirmationCode });
                 setCurrentStep('success');
+                onBookingSuccess?.();
               }
             }}
             onBack={goToPreviousStep}

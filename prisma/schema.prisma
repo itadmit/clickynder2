@@ -20,6 +20,7 @@ model User {
   email         String    @unique
   phone         String?
   passwordHash  String    @map("password_hash")
+  isSuperAdmin  Boolean   @default(false) @map("is_super_admin")
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
   lastLoginAt   DateTime? @map("last_login_at")
@@ -29,6 +30,7 @@ model User {
   memberships     BusinessMember[]
 
   @@index([email])
+  @@index([isSuperAdmin])
   @@map("users")
 }
 
@@ -45,6 +47,7 @@ model Business {
   
   // מיתוג
   logoUrl               String?   @map("logo_url")
+  templateStyle         String    @default("modern") @map("template_style") // modern, classic, minimal
   primaryColor          String?   @map("primary_color") @default("#0ea5e9")
   secondaryColor        String?   @map("secondary_color") @default("#d946ef")
   font                  String    @default("Noto Sans Hebrew")
@@ -54,6 +57,14 @@ model Business {
   showStaff             Boolean   @default(true) @map("show_staff")
   onlinePaymentEnabled  Boolean   @default(false) @map("online_payment_enabled")
   currency              String    @default("ILS")
+  
+  // רשתות חברתיות
+  facebookUrl           String?   @map("facebook_url")
+  instagramUrl          String?   @map("instagram_url")
+  twitterUrl            String?   @map("twitter_url")
+  youtubeUrl            String?   @map("youtube_url")
+  whatsappNumber        String?   @map("whatsapp_number")
+  telegramUrl           String?   @map("telegram_url")
   
   createdAt             DateTime  @default(now()) @map("created_at")
   updatedAt             DateTime  @updatedAt @map("updated_at")
@@ -731,4 +742,25 @@ enum TrackingEventType {
   form_submitted
   booking_confirmed
 }
+
+// ============================================
+// הגדרות מערכת (System Settings)
+// ============================================
+
+model SystemSettings {
+  id                      String    @id @default(cuid())
+  key                     String    @unique
+  value                   String
+  description             String?
+  isEncrypted             Boolean   @default(false) @map("is_encrypted")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @updatedAt @map("updated_at")
+
+  @@index([key])
+  @@map("system_settings")
+}
+
+// הגדרות Rappelsend יישמרו כ:
+// key: "rappelsend_client_id", value: "..."
+// key: "rappelsend_api_token", value: "..." (encrypted)
 

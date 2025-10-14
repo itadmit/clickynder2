@@ -148,6 +148,103 @@ export async function POST(req: NextRequest) {
           calendarColor: '#0ea5e9', // כחול ברירת מחדל
         },
       });
+
+      // יצירת תבניות WhatsApp ברירת מחדל
+      const whatsappTemplates = [
+        {
+          businessId: user.ownedBusinesses[0].id,
+          channel: 'whatsapp' as const,
+          event: 'booking_confirmed' as const,
+          subject: null,
+          body: `שלום {customer_name}! 👋
+
+התור שלך אושר בהצלחה! 🎉
+
+📅 תאריך: {appointment_date}
+🕒 שעה: {appointment_time}
+💈 שירות: {service_name}
+👤 מטפל/ת: {staff_name}
+🏢 {business_name}
+
+נשמח לראותך! 😊`,
+          active: true,
+        },
+        {
+          businessId: user.ownedBusinesses[0].id,
+          channel: 'whatsapp' as const,
+          event: 'booking_reminder' as const,
+          subject: null,
+          body: `היי {customer_name}! 🔔
+
+תזכורת: יש לך תור מחר!
+
+📅 תאריך: {appointment_date}
+🕒 שעה: {appointment_time}
+💈 שירות: {service_name}
+👤 מטפל/ת: {staff_name}
+
+נתראה! 🙂
+{business_name}`,
+          active: true,
+        },
+        {
+          businessId: user.ownedBusinesses[0].id,
+          channel: 'whatsapp' as const,
+          event: 'booking_canceled' as const,
+          subject: null,
+          body: `שלום {customer_name},
+
+התור שלך בוטל בהצלחה.
+
+📅 תאריך שבוטל: {appointment_date}
+🕒 שעה: {appointment_time}
+💈 שירות: {service_name}
+
+אנחנו כאן אם תרצה לקבוע תור חדש 😊
+
+{business_name}`,
+          active: true,
+        },
+        {
+          businessId: user.ownedBusinesses[0].id,
+          channel: 'whatsapp' as const,
+          event: 'booking_rescheduled' as const,
+          subject: null,
+          body: `שלום {customer_name}! 📅
+
+התור שלך עודכן בהצלחה!
+
+מועד חדש:
+📅 תאריך: {appointment_date}
+🕒 שעה: {appointment_time}
+💈 שירות: {service_name}
+👤 מטפל/ת: {staff_name}
+
+נתראה! 🙂
+{business_name}`,
+          active: true,
+        },
+        {
+          businessId: user.ownedBusinesses[0].id,
+          channel: 'whatsapp' as const,
+          event: 'admin_new_booking' as const,
+          subject: null,
+          body: `🔔 תור חדש התקבל!
+
+👤 לקוח: {customer_name}
+📅 תאריך: {appointment_date}
+🕒 שעה: {appointment_time}
+💈 שירות: {service_name}
+👨‍💼 מטפל/ת: {staff_name}
+
+{business_name}`,
+          active: true,
+        },
+      ];
+
+      await prisma.notificationTemplate.createMany({
+        data: whatsappTemplates,
+      });
     }
 
     return NextResponse.json({

@@ -251,7 +251,7 @@ export default async function DashboardPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="font-semibold text-gray-900">
-                          {appointment.customer.name}
+                          {appointment.customer.firstName} {appointment.customer.lastName}
                         </span>
                         <span className={`text-xs px-2 py-1 rounded-full ${
                           appointment.status === 'confirmed' 

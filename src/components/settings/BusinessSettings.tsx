@@ -16,15 +16,8 @@ export function BusinessSettings({ business }: BusinessSettingsProps) {
   const [formData, setFormData] = useState({
     name: business.name,
     slug: business.slug,
-    description: business.description || '',
-    phone: business.phone || '',
-    email: business.email || '',
     timezone: business.timezone,
     currency: business.currency || 'ILS',
-    primaryColor: business.primaryColor || '#3b82f6',
-    secondaryColor: business.secondaryColor || '#a855f7',
-    showBranches: business.showBranches,
-    showStaff: business.showStaff,
   });
   const [slugError, setSlugError] = useState('');
 
@@ -119,7 +112,7 @@ export function BusinessSettings({ business }: BusinessSettingsProps) {
                 הלקוחות שלך יוכלו לקבוע תור בכתובת:
               </p>
               <p className="text-sm text-primary-600 font-medium" dir="ltr" style={{ textAlign: 'left' }}>
-                clickinder.com/{formData.slug}
+                clickynder.com/{formData.slug}
               </p>
             </>
           )}
@@ -161,117 +154,6 @@ export function BusinessSettings({ business }: BusinessSettingsProps) {
             <option value="GBP">לירה שטרלינג (£)</option>
           </select>
         </div>
-      </div>
-
-      {/* Description */}
-      <div>
-        <label htmlFor="description" className="form-label">
-          תיאור העסק
-        </label>
-        <textarea
-          id="description"
-          value={formData.description}
-          onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-          className="form-input"
-          rows={3}
-          placeholder="ספר קצת על העסק שלך..."
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Phone */}
-        <div>
-          <label htmlFor="phone" className="form-label">
-            טלפון עסקי
-          </label>
-          <input
-            id="phone"
-            type="tel"
-            value={formData.phone}
-            onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
-            className="form-input"
-          />
-        </div>
-
-        {/* Email */}
-        <div>
-          <label htmlFor="email" className="form-label">
-            אימייל עסקי
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={formData.email}
-            onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
-            className="form-input"
-          />
-        </div>
-      </div>
-
-      {/* Colors */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="primaryColor" className="form-label">
-            צבע עיקרי
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="color"
-              value={formData.primaryColor}
-              onChange={(e) => setFormData((prev) => ({ ...prev, primaryColor: e.target.value }))}
-              className="w-16 h-10 rounded border border-gray-300"
-            />
-            <input
-              type="text"
-              value={formData.primaryColor}
-              onChange={(e) => setFormData((prev) => ({ ...prev, primaryColor: e.target.value }))}
-              className="form-input flex-1"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="secondaryColor" className="form-label">
-            צבע משני
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="color"
-              value={formData.secondaryColor}
-              onChange={(e) => setFormData((prev) => ({ ...prev, secondaryColor: e.target.value }))}
-              className="w-16 h-10 rounded border border-gray-300"
-            />
-            <input
-              type="text"
-              value={formData.secondaryColor}
-              onChange={(e) => setFormData((prev) => ({ ...prev, secondaryColor: e.target.value }))}
-              className="form-input flex-1"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Display Options */}
-      <div className="space-y-3">
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={formData.showBranches}
-            onChange={(e) => setFormData((prev) => ({ ...prev, showBranches: e.target.checked }))}
-            className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
-          />
-          <span className="text-sm font-medium">הצגת סניפים בעמוד ההזמנה</span>
-        </label>
-
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={formData.showStaff}
-            onChange={(e) => setFormData((prev) => ({ ...prev, showStaff: e.target.checked }))}
-            className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
-          />
-          <span className="text-sm font-medium">הצגת עובדים בעמוד ההזמנה</span>
-        </label>
       </div>
 
       {/* Submit */}

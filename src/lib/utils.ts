@@ -127,6 +127,49 @@ export function getDayName(dayIndex: number): string {
 }
 
 /**
+ * נרמול מספר טלפון ישראלי לפורמט בינלאומי
+ * @param phone - מספר טלפון בכל פורמט
+ * @returns מספר טלפון בפורמט 972XXXXXXXXX
+ * 
+ * דוגמאות:
+ * - normalizeIsraeliPhone('0542284283') => '972542284283'
+ * - normalizeIsraeliPhone('054-228-4283') => '972542284283'
+ * - normalizeIsraeliPhone('+972542284283') => '972542284283'
+ */
+export function normalizeIsraeliPhone(phone: string): string {
+  // הסרת כל התווים שאינם ספרות או +
+  let cleaned = phone.replace(/[\s\-\(\)\.]/g, '');
+  
+  // הסרת + מההתחלה
+  if (cleaned.startsWith('+')) {
+    cleaned = cleaned.substring(1);
+  }
+  
+  // טיפול ב-00972
+  if (cleaned.startsWith('00972')) {
+    return '972' + cleaned.substring(5);
+  }
+  
+  // אם מתחיל ב-972, החזר כפי שהוא
+  if (cleaned.startsWith('972')) {
+    return cleaned.length >= 12 ? cleaned.substring(0, 12) : cleaned;
+  }
+  
+  // אם מתחיל ב-0, החלף ל-972
+  if (cleaned.startsWith('0')) {
+    return '972' + cleaned.substring(1);
+  }
+  
+  // אם 9 ספרות מתחיל ב-5-9, הוסף 972
+  if (cleaned.length === 9 && /^[5-9]/.test(cleaned)) {
+    return '972' + cleaned;
+  }
+  
+  // ברירת מחדל - הוסף 972
+  return '972' + cleaned;
+}
+
+/**
  * Validate Israeli phone number
  */
 export function isValidIsraeliPhone(phone: string): boolean {
