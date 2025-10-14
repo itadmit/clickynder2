@@ -60,7 +60,7 @@ export default function BusinessNotFound() {
             <p className="text-sm text-blue-800">
               💡 <strong>בעל עסק?</strong> יצרת עסק חדש ומחפש את דף ההזמנות?
               <br />
-              הכתובת שלך תהיה: <code className="bg-blue-100 px-2 py-1 rounded">clickinder.co.il/שם-העסק-שלך/book</code>
+              הכתובת שלך תהיה: <code className="bg-blue-100 px-2 py-1 rounded">clickynder.com/שם-העסק-שלך</code>
             </p>
           </div>
         </div>
