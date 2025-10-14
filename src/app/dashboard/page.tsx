@@ -43,6 +43,26 @@ export default async function DashboardPage() {
     return <div>לא נמצא עסק</div>;
   }
 
+  // שליפת התורים האחרונים (5 תורים אחרונים)
+  const recentAppointments = await prisma.appointment.findMany({
+    where: {
+      businessId: business.id,
+      status: {
+        not: 'canceled',
+      },
+    },
+    include: {
+      customer: true,
+      service: true,
+      staff: true,
+      branch: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+    take: 5,
+  });
+
   // סטטיסטיקות
   const stats = [
     {
@@ -184,7 +204,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="card">
+        <div className="card mb-8">
           <h2 className="text-xl font-bold mb-4">פעולות מהירות</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Link
@@ -207,6 +227,84 @@ export default async function DashboardPage() {
             </Link>
           </div>
         </div>
+
+        {/* Recent Appointments */}
+        {recentAppointments.length > 0 && (
+          <div className="card">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">תורים אחרונים שנקבעו</h2>
+              <Link 
+                href="/dashboard/appointments" 
+                className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+              >
+                צפה בכל התורים ←
+              </Link>
+            </div>
+            <div className="space-y-3">
+              {recentAppointments.map((appointment) => (
+                <Link
+                  key={appointment.id}
+                  href={`/dashboard/appointments/${appointment.id}`}
+                  className="block p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="font-semibold text-gray-900">
+                          {appointment.customer.name}
+                        </span>
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          appointment.status === 'confirmed' 
+                            ? 'bg-green-100 text-green-700'
+                            : appointment.status === 'pending'
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : 'bg-gray-100 text-gray-700'
+                        }`}>
+                          {appointment.status === 'confirmed' ? 'מאושר' : 
+                           appointment.status === 'pending' ? 'ממתין' : 
+                           appointment.status === 'completed' ? 'הושלם' : 
+                           'בוטל'}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4" />
+                          {new Date(appointment.startAt).toLocaleDateString('he-IL', {
+                            weekday: 'short',
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </span>
+                        <span>
+                          {new Date(appointment.startAt).toLocaleTimeString('he-IL', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                        {appointment.service && (
+                          <span className="flex items-center gap-1">
+                            <span>•</span>
+                            {appointment.service.name}
+                          </span>
+                        )}
+                        {appointment.staff && (
+                          <span className="flex items-center gap-1">
+                            <Users className="w-4 h-4" />
+                            {appointment.staff.name}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-500 flex-shrink-0">
+                      נקבע {new Date(appointment.createdAt).toLocaleDateString('he-IL')}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
