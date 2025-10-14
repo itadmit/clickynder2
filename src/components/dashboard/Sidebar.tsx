@@ -142,24 +142,11 @@ export function Sidebar({ onToggle, businessName, businessLogo }: SidebarProps =
       {/* Logo */}
       <div className="p-4 lg:p-6 border-b border-gray-200 flex items-center justify-between">
         <Link href="/dashboard" className="flex-1 min-w-0 flex items-center justify-center gap-2">
-          {businessLogo ? (
-            <img 
-              src={businessLogo} 
-              alt={businessName || 'Logo'} 
-              className="h-8 lg:h-10 w-auto object-contain" 
-            />
-          ) : (
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-primary-600 to-primary-700 rounded-lg flex items-center justify-center shadow-sm">
-                <span className="text-white font-bold text-sm lg:text-base">
-                  {businessName ? businessName.charAt(0) : 'C'}
-                </span>
-              </div>
-              <span className="font-bold text-gray-900 text-sm lg:text-base truncate">
-                {businessName || 'Clickinder'}
-              </span>
-            </div>
-          )}
+          <img 
+            src="/assets/logo.png" 
+            alt="Clickinder" 
+            className="h-8 lg:h-10 w-auto object-contain" 
+          />
         </Link>
         {/* Close button for mobile */}
         <button

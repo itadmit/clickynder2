@@ -103,7 +103,7 @@ export default async function DashboardPage() {
   return (
     <>
       <DashboardHeader
-        title={`שלום, ${session.user.name}`}
+        title={`שלום, ${session.user.name} 👋`}
         subtitle={`עסק: ${business.name}`}
       />
 

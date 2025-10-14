@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
-import { BookingFlow } from '@/components/booking/BookingFlow';
-import { AlertCircle, Settings } from 'lucide-react';
+import { BusinessInfoPage } from '@/components/booking/BusinessInfoPage';
+import { AlertCircle, Settings, Phone, Mail } from 'lucide-react';
 
 interface BookingPageProps {
   params: {
@@ -87,7 +87,7 @@ export default async function BookingPage({ params }: BookingPageProps) {
         </div>
       </header>
 
-      {/* Booking Flow */}
+      {/* Main Content */}
       <main className="container mx-auto max-w-5xl px-4 py-8">
         {!isReady ? (
           <div className="bg-white rounded-lg shadow-lg p-8 md:p-12 text-center max-w-2xl mx-auto">
@@ -162,7 +162,7 @@ export default async function BookingPage({ params }: BookingPageProps) {
             )}
           </div>
         ) : (
-          <BookingFlow
+          <BusinessInfoPage
             business={business}
             branches={business.branches}
             services={business.services}
