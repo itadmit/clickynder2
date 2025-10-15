@@ -7,8 +7,8 @@ import { sendNotificationFromTemplate } from '@/lib/notifications/notification-s
  * 
  * צריך להפעיל כל 15 דקות או כל שעה
  * 
- * דוגמה עם crontab:
- * */15 * * * * curl -X POST https://clickynder.com/api/cron/send-reminders -H "Authorization: Bearer YOUR_SECRET_KEY"
+ * דוגמה עם crontab (להריץ כל 15 דקות):
+ * curl -X POST https://clickynder.com/api/cron/send-reminders -H "Authorization: Bearer YOUR_SECRET_KEY"
  */
 export async function POST(req: NextRequest) {
   try {
