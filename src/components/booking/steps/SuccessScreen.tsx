@@ -55,7 +55,7 @@ export function SuccessScreen({ business, bookingData, branches, services, staff
 
       {/* Business Name Header - Transparent */}
       <div 
-        className="relative z-10 backdrop-blur-lg text-white py-4 text-center sticky top-0 shadow-md"
+        className="z-10 backdrop-blur-lg text-white py-4 text-center sticky top-0 shadow-md"
         style={{ 
           backgroundColor: business.primaryColor ? `${business.primaryColor}B3` : '#3b82f6B3'
         }}
@@ -64,30 +64,30 @@ export function SuccessScreen({ business, bookingData, branches, services, staff
       </div>
 
       {/* Content Container */}
-      <div className="relative z-10 w-full py-6 px-4 min-h-[calc(100vh-200px)] flex flex-col">
+      <div className="relative z-10 w-full py-6 px-4 sm:px-6 lg:px-8 min-h-[calc(100vh-200px)] flex flex-col">
         {/* Desktop: 2 Columns, Mobile: 1 Column */}
-        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch flex-1">
+        <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 items-stretch flex-1">
           
           {/* Right Column - Illustration */}
-          <div className="text-center flex items-center justify-center">
+          <div className="text-center flex items-center justify-center order-2 lg:order-1">
             <img 
               src="/assets/success-illustration.svg" 
               alt="Success" 
-              className="w-full max-w-md lg:max-w-full mx-auto h-auto lg:h-full object-contain"
+              className="w-full max-w-sm sm:max-w-md lg:max-w-full mx-auto h-auto lg:h-full object-contain"
             />
           </div>
 
           {/* Left Column - Details */}
-          <div className="text-center lg:text-right space-y-6 flex flex-col justify-center">
+          <div className="text-center lg:text-right space-y-4 sm:space-y-6 flex flex-col justify-center order-1 lg:order-2">
             {/* Title */}
             <div>
-              <h2 className="text-3xl font-bold mb-2 text-gray-800">התור נקבע בהצלחה!</h2>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 text-gray-800">התור נקבע בהצלחה!</h2>
               
               {/* Confirmation Code */}
               <div className="mt-4">
                 <p className="text-sm text-gray-600 mb-2">מספר אישור</p>
-                <div className="inline-block bg-white rounded-xl px-6 py-3 shadow-lg">
-                  <p className="text-3xl font-bold text-indigo-600 tracking-wider">
+                <div className="inline-block bg-white rounded-xl px-6 sm:px-8 py-3 sm:py-4 shadow-lg">
+                  <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-indigo-600 tracking-wider">
                     {bookingData.confirmationCode}
                   </p>
                 </div>
@@ -95,9 +95,9 @@ export function SuccessScreen({ business, bookingData, branches, services, staff
             </div>
 
             {/* Details Card */}
-            <div className="bg-white rounded-lg shadow-xl p-6 text-right">
-              <h3 className="font-bold text-lg mb-4 text-gray-800">פרטי התור שלך</h3>
-              <div className="space-y-4 text-base">
+            <div className="bg-white rounded-lg shadow-xl p-5 sm:p-6 lg:p-8 text-right">
+              <h3 className="font-bold text-lg sm:text-xl mb-4 sm:mb-6 text-gray-800">פרטי התור שלך</h3>
+              <div className="space-y-3 sm:space-y-4 text-sm sm:text-base">
                 {selectedService && (
                   <div className="flex justify-between items-center pb-3 border-b border-gray-100">
                     <span className="text-gray-500">שירות</span>
