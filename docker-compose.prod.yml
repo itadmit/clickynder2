@@ -35,6 +35,20 @@ services:
     networks:
       - clickynder-network
 
+  worker:
+    image: clickynder-app:latest
+    container_name: clickynder_worker
+    restart: always
+    command: node worker/reminders-worker.js
+    env_file:
+      - .env.production
+    environment:
+      - WORKER_API_URL=http://app:3000
+    depends_on:
+      - app
+    networks:
+      - clickynder-network
+
 volumes:
   postgres_data:
 

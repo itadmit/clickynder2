@@ -702,6 +702,8 @@ model DashboardNotification {
 enum DashboardNotificationType {
   new_appointment
   cancelled_appointment
+  appointment_confirmed
+  appointment_canceled
   reminder
   system
 }

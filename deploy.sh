@@ -87,5 +87,6 @@ echo ""
 echo -e "${GREEN}🎉 Deployment completed successfully!${NC}"
 echo -e "${YELLOW}🌐 Your app is live at: https://clickynder.com${NC}"
 echo ""
-echo "📊 To view logs, run: ssh ${REMOTE_HOST} 'sudo docker logs clickynder_app -f'"
+echo "📊 To view app logs: ssh ${REMOTE_HOST} 'sudo docker logs clickynder_app -f'"
+echo "🔔 To view worker logs: ssh ${REMOTE_HOST} 'sudo docker logs clickynder_worker -f'"
 
