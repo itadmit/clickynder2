@@ -235,11 +235,11 @@ export function BookingPageDesign({ business }: BookingPageDesignProps) {
           </div>
 
           {/* iPhone Preview */}
-          <div className="lg:w-80 flex-shrink-0">
+          <div className="lg:w-96 flex-shrink-0">
             <div className="sticky top-8">
               <div className="text-sm font-semibold text-gray-700 mb-3 text-center">תצוגה מקדימה</div>
               {/* iPhone Frame */}
-              <div className="relative mx-auto w-64 h-[550px]">
+              <div className="relative mx-auto w-80 h-[680px]">
                 {/* iPhone Border */}
                 <div className="absolute inset-0 bg-gray-900 rounded-[3rem] p-3 shadow-2xl">
                   {/* Screen */}
