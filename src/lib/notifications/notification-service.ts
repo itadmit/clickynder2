@@ -358,6 +358,12 @@ function replaceTemplateVariables(template: string, variables: TemplateVariables
     }
   }
 
+  // המרת \n למחרוזת escape אמיתית (ירידת שורה)
+  result = result.replace(/\\n/g, '\n');
+  
+  // המרת \t לטאב (אם נדרש)
+  result = result.replace(/\\t/g, '\t');
+
   return result;
 }
 

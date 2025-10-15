@@ -317,7 +317,7 @@ export default function AppointmentDetailPage() {
                   <div>
                     <p className="text-sm text-gray-600">שעה</p>
                     <p className="font-medium">
-                      {formatTime(appointment.startAt)} - {formatTime(appointment.endAt)}
+                      {formatTime(appointment.startAt)}-{formatTime(appointment.endAt)}
                     </p>
                   </div>
                 </div>

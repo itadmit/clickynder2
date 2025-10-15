@@ -27,7 +27,7 @@ export function ClassicTemplate({ business }: ClassicTemplateProps) {
         hoursMap[bh.weekday] = [];
       }
       if (bh.openTime && bh.closeTime) {
-        hoursMap[bh.weekday].push(`${bh.openTime.substring(0, 5)} - ${bh.closeTime.substring(0, 5)}`);
+        hoursMap[bh.weekday].push(`${bh.openTime.substring(0, 5)}-${bh.closeTime.substring(0, 5)}`);
       }
     });
 

@@ -69,7 +69,7 @@ export function ModernTemplate({ business }: ModernTemplateProps) {
                   {business.businessHours?.[0]?.openTime && business.businessHours[0].closeTime && (
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Clock className="w-4 h-4 text-primary-600" />
-                      <span>שעות פעילות: {business.businessHours[0].openTime.substring(0, 5)} - {business.businessHours[0].closeTime.substring(0, 5)}</span>
+                      <span>שעות פעילות: {business.businessHours[0].openTime.substring(0, 5)}-{business.businessHours[0].closeTime.substring(0, 5)}</span>
                     </div>
                   )}
                 </div>

@@ -27,7 +27,7 @@ export function BusinessInfoPage({ business, branches, services, staff }: Busine
       
       return {
         day: dayNames[index],
-        hours: `${hours.openTime} - ${hours.closeTime}`
+        hours: `${hours.openTime}-${hours.closeTime}`
       };
     }).filter(Boolean);
   };
