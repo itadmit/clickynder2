@@ -38,6 +38,7 @@ export async function POST(
       include: {
         customer: true,
         service: true,
+        branch: true,
         business: {
           select: {
             id: true,
@@ -90,7 +91,13 @@ export async function POST(
     const confirmationLink = `https://clickynder.com/confirm-edit/${confirmationToken}`;
 
     // שליחת הודעה ללקוח עם בקשה לאישור
-    await sendEditConfirmationNotification(appointment, pendingEdit, confirmationLink);
+    try {
+      await sendEditConfirmationNotification(appointment, pendingEdit, confirmationLink);
+      console.log('✅ Edit confirmation notification sent successfully');
+    } catch (notificationError) {
+      console.error('❌ Failed to send edit confirmation notification:', notificationError);
+      // Don't fail the entire request if notification fails
+    }
 
     return NextResponse.json({
       success: true,
@@ -126,6 +133,7 @@ async function sendEditConfirmationNotification(
   const variables = {
     business_name: appointment.business.name,
     customer_name: `${appointment.customer.firstName} ${appointment.customer.lastName}`,
+    branch_name: appointment.branch?.name || '',
     old_date: new Intl.DateTimeFormat('he-IL', {
       weekday: 'long',
       year: 'numeric',

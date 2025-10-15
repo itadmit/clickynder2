@@ -174,7 +174,6 @@ export function EditAppointmentModal({
               onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
               className="form-input"
               required
-              min={new Date().toISOString().split('T')[0]}
             />
           </div>
 
