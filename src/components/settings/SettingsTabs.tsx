@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Building2, Phone, Clock, Bell, Globe } from 'lucide-react';
+import { Building2, Phone, Clock, Bell, Globe, BellRing } from 'lucide-react';
 
 interface SettingsTabsProps {
   children: React.ReactNode[];
@@ -13,7 +13,8 @@ const tabs = [
   { id: 'contact', label: 'פרטי יצירת קשר', icon: Phone },
   { id: 'hours', label: 'שעות עבודה', icon: Clock },
   { id: 'slots', label: 'זמני פגישות', icon: Clock },
-  { id: 'notifications', label: 'התראות', icon: Bell },
+  { id: 'reminders', label: 'תזכורות', icon: BellRing },
+  { id: 'notifications', label: 'תבניות התראות', icon: Bell },
 ];
 
 export function SettingsTabs({ children }: SettingsTabsProps) {

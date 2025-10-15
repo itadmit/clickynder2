@@ -8,6 +8,7 @@ import { BookingPageDesign } from '@/components/settings/BookingPageDesign';
 import { ContactSettings } from '@/components/settings/ContactSettings';
 import { WorkingHours } from '@/components/settings/WorkingHours';
 import { SlotSettings } from '@/components/settings/SlotSettings';
+import { ReminderSettings } from '@/components/settings/ReminderSettings';
 import { NotificationSettings } from '@/components/settings/NotificationSettings';
 
 export default async function SettingsPage() {
@@ -80,9 +81,23 @@ export default async function SettingsPage() {
             />
           </div>
 
-          {/* Tab 5: Notification Settings */}
+          {/* Tab 5: Reminder Settings */}
           <div className="card">
-            <h2 className="text-xl font-bold mb-6">התראות והודעות</h2>
+            <h2 className="text-xl font-bold mb-6">תזכורות ואישורי הגעה</h2>
+            <ReminderSettings
+              businessId={business.id}
+              initialSettings={{
+                reminderEnabled: business.reminderEnabled,
+                reminderHoursBefore: business.reminderHoursBefore,
+                confirmationEnabled: business.confirmationEnabled,
+                confirmationHoursBefore: business.confirmationHoursBefore,
+              }}
+            />
+          </div>
+
+          {/* Tab 6: Notification Templates */}
+          <div className="card">
+            <h2 className="text-xl font-bold mb-6">תבניות התראות</h2>
             <NotificationSettings
               businessId={business.id}
               templates={notificationTemplates}

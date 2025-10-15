@@ -72,6 +72,10 @@ export async function PATCH(
       'developerMode',
       'customCss',
       'customJs',
+      'reminderEnabled',
+      'reminderHoursBefore',
+      'confirmationEnabled',
+      'confirmationHoursBefore',
     ];
 
     const updateData: any = {};
