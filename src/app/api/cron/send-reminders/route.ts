@@ -94,9 +94,7 @@ export async function POST(req: NextRequest) {
                   customerId: appointment.customerId,
                   channel: 'whatsapp',
                   event: 'booking_reminder',
-                  recipient: appointment.customer.phone || appointment.customer.email || '',
-                  subject: null,
-                  body: `תזכורת לתור שלך ב-${appointment.startAt.toLocaleString('he-IL')}`,
+                  toAddress: appointment.customer.phone || appointment.customer.email || '',
                   status: 'queued',
                 },
               });
