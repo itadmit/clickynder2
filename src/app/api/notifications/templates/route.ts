@@ -114,6 +114,29 @@ const DEFAULT_WHATSAPP_TEMPLATES = [
 
 {business_name}`,
   },
+  {
+    channel: 'whatsapp' as NotificationChannel,
+    event: 'appointment_confirmation' as NotificationEvent,
+    subject: null,
+    body: `היי {customer_name}! 👋
+
+נשמח לאשר איתך שאתה מגיע לתור:
+
+📅 תאריך: {appointment_date}
+🕒 שעה: {appointment_time}
+💈 שירות: {service_name}
+👤 מטפל/ת: {staff_name}
+📍 סניף: {branch_name}
+
+✅ מאשר הגעה? לחץ כאן:
+{confirm_link}
+
+❌ צריך לבטל? לחץ כאן:
+{cancel_link}
+
+תודה!
+{business_name}`,
+  },
 ];
 
 /**
