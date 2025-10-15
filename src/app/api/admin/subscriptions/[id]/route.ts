@@ -47,6 +47,11 @@ export async function PATCH(
           currentPeriodStart: new Date(),
           currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 ימים
         }),
+        // אם מעבירים לניסיון, נותנים 14 ימים
+        ...(status === 'trial' && {
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 ימים
+        }),
       },
     });
 

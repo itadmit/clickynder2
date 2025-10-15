@@ -322,20 +322,34 @@ export async function sendBookingConfirmation(appointmentId: string): Promise<bo
       appointment.customerId
     );
 
-    // שליחת התראה לעסק (רק אם יש אימייל לעסק)
-    let businessNotification = false;
+    // שליחת התראה לעסק (אימייל, WhatsApp, SMS)
+    const businessChannels: NotificationChannel[] = [];
+    const businessRecipient: { phone?: string; email?: string } = {};
+    
     if (appointment.business.email) {
-      businessNotification = await sendNotificationFromTemplate(
+      businessChannels.push('email');
+      businessRecipient.email = appointment.business.email;
+    }
+    
+    if (appointment.business.phone) {
+      businessChannels.push('whatsapp');
+      businessChannels.push('sms');
+      businessRecipient.phone = appointment.business.phone;
+    }
+    
+    let businessResults: { channel: NotificationChannel; success: boolean }[] = [];
+    if (businessChannels.length > 0) {
+      businessResults = await sendMultiChannelNotification(
         appointment.businessId,
-        'email',
         'admin_new_booking',
-        appointment.business.email,
+        businessChannels,
+        businessRecipient,
         variables,
         appointmentId
       );
     }
 
-    return customerResults.some(r => r.success) || businessNotification;
+    return customerResults.some(r => r.success) || businessResults.some(r => r.success);
   } catch (error) {
     console.error('Error sending booking confirmation:', error);
     return false;

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Business } from '@prisma/client';
-import { Save, Upload, Palette, Layout, Sparkles, Square, Circle } from 'lucide-react';
+import { Save, Upload, Palette, Layout, Sparkles, Square, Menu, Type } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 
@@ -13,25 +13,33 @@ interface BookingPageDesignProps {
 const templates = [
   {
     id: 'modern',
-    name: 'מודרני',
-    description: 'עיצוב נקי ומודרני עם גרדיאנטים',
+    name: 'קלאסי',
+    description: 'דף אחד ישיר - הלקוח נכנס ומזמין מיד',
     icon: Sparkles,
     gradient: 'from-blue-500 to-purple-600',
   },
   {
     id: 'classic',
-    name: 'קלאסי',
-    description: 'עיצוב מסורתי ואלגנטי',
+    name: 'מודרני',
+    description: 'דף בית + מודל הזמנה - לוגו, שירותים וכפתור',
     icon: Square,
     gradient: 'from-gray-600 to-gray-800',
   },
   {
     id: 'minimal',
-    name: 'מינימליסטי',
-    description: 'עיצוב פשוט ונקי',
-    icon: Circle,
-    gradient: 'from-slate-400 to-slate-600',
+    name: 'תפריט ספא',
+    description: 'עיצוב אלגנטי בסגנון תפריט מסעדה - מושלם לספא',
+    icon: Menu,
+    gradient: 'from-amber-500 to-orange-600',
   },
+];
+
+const fonts = [
+  { id: 'Noto Sans Hebrew', name: 'Noto Sans Hebrew', example: 'שלום' },
+  { id: 'Assistant', name: 'Assistant', example: 'שלום' },
+  { id: 'Heebo', name: 'Heebo', example: 'שלום' },
+  { id: 'Rubik', name: 'Rubik', example: 'שלום' },
+  { id: 'Varela Round', name: 'Varela Round', example: 'שלום' },
 ];
 
 export function BookingPageDesign({ business }: BookingPageDesignProps) {
@@ -43,9 +51,13 @@ export function BookingPageDesign({ business }: BookingPageDesignProps) {
     templateStyle: business.templateStyle || 'modern',
     primaryColor: business.primaryColor || '#0ea5e9',
     secondaryColor: business.secondaryColor || '#d946ef',
+    font: business.font || 'Noto Sans Hebrew',
     description: business.description || '',
     showBranches: business.showBranches,
     showStaff: business.showStaff,
+    developerMode: business.developerMode || false,
+    customCss: business.customCss || '',
+    customJs: business.customJs || '',
   });
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,7 +126,7 @@ export function BookingPageDesign({ business }: BookingPageDesignProps) {
       <div className="card">
         <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
           <Upload className="w-5 h-5 text-primary-600" />
-          לוגו העסק
+          לוגו ותיאור העסק
         </h3>
         <div className="flex flex-col md:flex-row items-start gap-6">
           {/* Logo Preview */}
@@ -164,6 +176,19 @@ export function BookingPageDesign({ business }: BookingPageDesignProps) {
               </button>
             )}
           </div>
+        </div>
+
+        {/* Description - Moved here */}
+        <div className="mt-6">
+          <label htmlFor="description" className="form-label">תיאור העסק</label>
+          <textarea
+            id="description"
+            value={formData.description}
+            onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+            className="form-input"
+            rows={4}
+            placeholder="ספר קצת על העסק שלך... התיאור יוצג בעמוד קביעת התורים"
+          />
         </div>
       </div>
 
@@ -232,7 +257,10 @@ export function BookingPageDesign({ business }: BookingPageDesignProps) {
                     {/* Preview Content - Changes based on selected template */}
                     <div className="h-full overflow-hidden">
                       {formData.templateStyle === 'modern' && (
-                        <div className="h-full bg-gradient-to-br from-blue-50 to-purple-50 p-3 overflow-y-auto">
+                        <div 
+                          className="h-full bg-gradient-to-br from-blue-50 to-purple-50 p-3 overflow-y-auto"
+                          style={{ fontFamily: `'${formData.font}', sans-serif` }}
+                        >
                           {/* Modern Preview */}
                           <div className="bg-white rounded-xl p-3 mb-2 shadow-sm">
                             {formData.logoUrl && (
@@ -265,7 +293,10 @@ export function BookingPageDesign({ business }: BookingPageDesignProps) {
                       )}
 
                       {formData.templateStyle === 'classic' && (
-                        <div className="h-full bg-gray-50 overflow-y-auto">
+                        <div 
+                          className="h-full bg-gray-50 overflow-y-auto"
+                          style={{ fontFamily: `'${formData.font}', sans-serif` }}
+                        >
                           {/* Classic Preview */}
                           <div className="bg-white border-b p-3">
                             <div className="flex items-center gap-2">
@@ -304,44 +335,60 @@ export function BookingPageDesign({ business }: BookingPageDesignProps) {
                       )}
 
                       {formData.templateStyle === 'minimal' && (
-                        <div className="h-full overflow-y-auto">
-                          {/* Minimal Bold Preview */}
-                          <div 
-                            className="p-4 text-white text-center"
-                            style={{
-                              background: `linear-gradient(135deg, ${formData.primaryColor} 0%, ${formData.secondaryColor} 100%)`
-                            }}
-                          >
+                        <div 
+                          className="h-full overflow-y-auto bg-gradient-to-b from-[#faf9f6] to-[#f5f1ea]"
+                          style={{ fontFamily: `'${formData.font}', sans-serif` }}
+                        >
+                          {/* Spa/Menu Preview */}
+                          <div className="p-3 text-center">
                             {formData.logoUrl && (
-                              <img src={formData.logoUrl} alt="Logo" className="w-12 h-12 mx-auto mb-1" />
+                              <img src={formData.logoUrl} alt="Logo" className="w-10 h-10 mx-auto mb-1 opacity-90" />
                             )}
-                            <div className="text-[10px] font-black">{business.name}</div>
-                            {formData.description && (
-                              <div className="text-[7px] opacity-90 mt-0.5">{formData.description.slice(0, 25)}...</div>
-                            )}
-                            <div className="bg-white text-gray-900 text-[7px] font-bold py-1.5 rounded-full mt-2">
-                              קבע תור
+                            <div className="h-px w-8 mx-auto mb-1" style={{ backgroundColor: formData.primaryColor }}></div>
+                            <div className="text-[9px] font-black" style={{ color: formData.primaryColor }}>
+                              {business.name}
                             </div>
+                            {formData.description && (
+                              <div className="text-[6px] text-gray-600 font-normal mt-0.5">{formData.description.slice(0, 30)}...</div>
+                            )}
                           </div>
-                          <div className="p-3 bg-gray-100 space-y-1.5">
-                            <div className="bg-white rounded-xl overflow-hidden">
-                              <div className="h-0.5" style={{ backgroundColor: formData.primaryColor }}></div>
-                              <div className="p-2">
-                                <div className="text-[8px] font-bold">שירות 1</div>
-                                <div className="flex justify-between items-center mt-1">
-                                  <div className="text-[7px]">30'</div>
-                                  <div className="text-[9px] font-black" style={{ color: formData.primaryColor }}>₪100</div>
+                          
+                          {/* Menu Card */}
+                          <div className="mx-2 bg-white/80 backdrop-blur-sm rounded-lg shadow-lg p-2">
+                            <div className="text-center mb-2 pb-1.5 border-b" style={{ borderColor: `${formData.primaryColor}30` }}>
+                              <div className="text-[7px] font-black" style={{ color: formData.primaryColor }}>השירותים שלנו</div>
+                            </div>
+                            
+                            {/* Menu Items */}
+                            <div className="space-y-1.5">
+                              <div className="p-1.5 hover:bg-gray-50 rounded">
+                                <div className="flex justify-between items-start mb-0.5">
+                                  <div className="text-[7px] font-black" style={{ color: formData.primaryColor }}>שירות 1</div>
+                                  <div className="text-[7px] font-black mr-1" style={{ color: formData.primaryColor }}>₪100</div>
                                 </div>
+                                <div className="text-[5px] text-gray-600 font-normal">טיפול מרגיע</div>
+                                <div className="text-[5px] font-normal" style={{ color: formData.secondaryColor }}>30 דקות</div>
+                                <div className="h-px mt-1 border-b border-dotted" style={{ borderColor: `${formData.primaryColor}20` }}></div>
+                              </div>
+                              
+                              <div className="p-1.5 hover:bg-gray-50 rounded">
+                                <div className="flex justify-between items-start mb-0.5">
+                                  <div className="text-[7px] font-black" style={{ color: formData.primaryColor }}>שירות 2</div>
+                                  <div className="text-[7px] font-black mr-1" style={{ color: formData.primaryColor }}>₪150</div>
+                                </div>
+                                <div className="text-[5px] text-gray-600 font-normal">טיפול מפנק</div>
+                                <div className="text-[5px] font-normal" style={{ color: formData.secondaryColor }}>45 דקות</div>
                               </div>
                             </div>
-                            <div className="bg-white rounded-xl overflow-hidden">
-                              <div className="h-0.5" style={{ backgroundColor: formData.primaryColor }}></div>
-                              <div className="p-2">
-                                <div className="text-[8px] font-bold">שירות 2</div>
-                                <div className="flex justify-between items-center mt-1">
-                                  <div className="text-[7px]">45'</div>
-                                  <div className="text-[9px] font-black" style={{ color: formData.primaryColor }}>₪150</div>
-                                </div>
+                            
+                            <div className="text-center mt-2 pt-1.5 border-t" style={{ borderColor: `${formData.primaryColor}30` }}>
+                              <div 
+                                className="text-white text-[6px] py-1 rounded-full font-light"
+                                style={{
+                                  background: `linear-gradient(135deg, ${formData.primaryColor}, ${formData.secondaryColor})`
+                                }}
+                              >
+                                לקביעת תור
                               </div>
                             </div>
                           </div>
@@ -359,6 +406,42 @@ export function BookingPageDesign({ business }: BookingPageDesignProps) {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Font Selection */}
+      <div className="card">
+        <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+          <Type className="w-5 h-5 text-primary-600" />
+          בחירת פונט
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {fonts.map((font) => (
+            <button
+              key={font.id}
+              type="button"
+              onClick={() => setFormData((prev) => ({ ...prev, font: font.id }))}
+              className={`p-5 rounded-lg border-2 transition-all text-center ${
+                formData.font === font.id
+                  ? 'border-primary-600 bg-primary-50 shadow-md'
+                  : 'border-gray-200 hover:border-primary-300'
+              }`}
+            >
+              <div className="text-xs font-medium text-gray-500 mb-3">{font.name}</div>
+              <div 
+                className="text-4xl font-black mb-2"
+                style={{ fontFamily: `'${font.id}', sans-serif` }}
+              >
+                {font.example}
+              </div>
+              <div 
+                className="text-base font-normal text-gray-600"
+                style={{ fontFamily: `'${font.id}', sans-serif` }}
+              >
+                דוגמה לטקסט רגיל
+              </div>
+            </button>
+          ))}
         </div>
       </div>
 
@@ -415,18 +498,6 @@ export function BookingPageDesign({ business }: BookingPageDesignProps) {
         </div>
       </div>
 
-      {/* Description */}
-      <div className="card">
-        <h3 className="text-lg font-bold mb-4">תיאור העסק</h3>
-        <textarea
-          value={formData.description}
-          onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-          className="form-input"
-          rows={4}
-          placeholder="ספר קצת על העסק שלך... התיאור יוצג בעמוד קביעת התורים"
-        />
-      </div>
-
       {/* Display Options */}
       <div className="card">
         <h3 className="text-lg font-bold mb-4">אפשרויות תצוגה</h3>
@@ -456,8 +527,90 @@ export function BookingPageDesign({ business }: BookingPageDesignProps) {
               <p className="text-xs text-gray-500">אפשר ללקוחות לבחור עובד ספציפי</p>
             </div>
           </label>
+
+          <label className="flex items-center gap-3 cursor-pointer p-3 hover:bg-gray-50 rounded-lg">
+            <input
+              type="checkbox"
+              checked={formData.developerMode}
+              onChange={(e) => setFormData((prev) => ({ ...prev, developerMode: e.target.checked }))}
+              className="w-5 h-5 text-primary-600 rounded focus:ring-primary-500"
+            />
+            <div>
+              <span className="text-sm font-medium text-gray-900">מצב מתכנת</span>
+              <p className="text-xs text-gray-500">הוסף CSS ו-JavaScript מותאם אישית לעמוד ההזמנה</p>
+            </div>
+          </label>
         </div>
       </div>
+
+      {/* Developer Mode Section */}
+      {formData.developerMode && (
+        <div className="card border-2 border-purple-200 bg-purple-50/30">
+          <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+           
+            מצב מתכנת
+          </h3>
+          
+          <div className="space-y-6">
+            {/* Custom CSS */}
+            <div>
+              <label htmlFor="customCss" className="form-label flex items-center gap-2">
+                <span>קוד CSS מותאם אישית</span>
+                <span className="text-xs text-gray-500 font-normal">(אופציונלי)</span>
+              </label>
+              <textarea
+                id="customCss"
+                value={formData.customCss}
+                onChange={(e) => setFormData((prev) => ({ ...prev, customCss: e.target.value }))}
+                className="form-input font-mono text-sm"
+                rows={10}
+                placeholder="/* הכנס כאן CSS מותאם אישית */&#10;.my-custom-class {&#10;  color: #ff0000;&#10;  font-size: 18px;&#10;}&#10;&#10;/* או הוסף תגית <style> */&#10;<style>&#10;  .header {&#10;    background: linear-gradient(to right, #667eea, #764ba2);&#10;  }&#10;</style>"
+                dir="ltr"
+                style={{ direction: 'ltr' }}
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                💡 ניתן להוסיף CSS ישירות או בתוך תגית &lt;style&gt;. הקוד יתווסף ל-head של הדף.
+              </p>
+            </div>
+
+            {/* Custom JavaScript */}
+            <div>
+              <label htmlFor="customJs" className="form-label flex items-center gap-2">
+                <span>קוד JavaScript מותאם אישית</span>
+                <span className="text-xs text-gray-500 font-normal">(אופציונלי)</span>
+              </label>
+              <textarea
+                id="customJs"
+                value={formData.customJs}
+                onChange={(e) => setFormData((prev) => ({ ...prev, customJs: e.target.value }))}
+                className="form-input font-mono text-sm"
+                rows={10}
+                placeholder="// הכנס כאן JavaScript מותאם אישית&#10;console.log('Hello from custom JS!');&#10;&#10;// או הוסף תגית <script>&#10;<script>&#10;  document.addEventListener('DOMContentLoaded', function() {&#10;    console.log('Page loaded!');&#10;  });&#10;</script>"
+                dir="ltr"
+                style={{ direction: 'ltr' }}
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                💡 ניתן להוסיף JavaScript ישירות או בתוך תגית &lt;script&gt;. הקוד יתווסף ל-head של הדף.
+              </p>
+            </div>
+
+            {/* Warning */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex gap-3">
+                <span className="text-2xl">⚠️</span>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-yellow-800 mb-1">שים לב!</p>
+                  <ul className="text-xs text-yellow-700 space-y-1">
+                    <li>• קוד שגוי עלול לשבור את העמוד</li>
+                    <li>• השתמש בכלי הזה רק אם יש לך ידע בפיתוח</li>
+                    <li>• הקוד מתווסף לכל דפי ההזמנה של העסק</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Submit Button */}
       <div className="flex gap-4">

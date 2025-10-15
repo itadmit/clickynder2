@@ -114,6 +114,8 @@ export function BookingFlow({ business, branches, services, staff, onBookingSucc
         steps={steps}
         currentStep={currentStep}
         completedSteps={steps.slice(0, currentStepIndex)}
+        primaryColor={business.primaryColor}
+        secondaryColor={business.secondaryColor}
       />
 
       {/* Step Content */}

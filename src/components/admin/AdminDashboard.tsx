@@ -83,6 +83,13 @@ export function AdminDashboard({ users: initialUsers, systemSettings: initialSet
   };
 
   const handleUpdateSubscription = async (businessId: string, status: string) => {
+    // אישור למעבר מפעיל לניסיון
+    if (status === 'trial') {
+      if (!confirm('האם אתה בטוח שברצונך להעביר את המנוי מפעיל לניסיון? הלקוח יקבל 14 ימי ניסיון חדשים.')) {
+        return;
+      }
+    }
+
     try {
       const response = await fetch(`/api/admin/subscriptions/${businessId}`, {
         method: 'PATCH',
@@ -351,19 +358,34 @@ export function AdminDashboard({ users: initialUsers, systemSettings: initialSet
                               <div className="text-xs text-gray-500">
                                 {user.ownedBusinesses[0].subscription.package.name}
                               </div>
-                              {user.ownedBusinesses[0].subscription.status === 'trial' && (
-                                <button
-                                  onClick={() =>
-                                    handleUpdateSubscription(
-                                      user.ownedBusinesses[0].id,
-                                      'active'
-                                    )
-                                  }
-                                  className="text-xs text-green-600 hover:text-green-700 underline"
-                                >
-                                  העבר לפעיל
-                                </button>
-                              )}
+                              <div className="flex gap-2 mt-2">
+                                {user.ownedBusinesses[0].subscription.status === 'trial' && (
+                                  <button
+                                    onClick={() =>
+                                      handleUpdateSubscription(
+                                        user.ownedBusinesses[0].id,
+                                        'active'
+                                      )
+                                    }
+                                    className="text-xs text-green-600 hover:text-green-700 underline"
+                                  >
+                                    העבר לפעיל
+                                  </button>
+                                )}
+                                {user.ownedBusinesses[0].subscription.status === 'active' && (
+                                  <button
+                                    onClick={() =>
+                                      handleUpdateSubscription(
+                                        user.ownedBusinesses[0].id,
+                                        'trial'
+                                      )
+                                    }
+                                    className="text-xs text-blue-600 hover:text-blue-700 underline"
+                                  >
+                                    העבר לניסיון
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           ) : (
                             <span className="text-sm text-gray-400">אין מנוי</span>

@@ -59,6 +59,11 @@ model Business {
   onlinePaymentEnabled  Boolean   @default(false) @map("online_payment_enabled")
   currency              String    @default("ILS")
   
+  // מצב מתכנת
+  developerMode         Boolean   @default(false) @map("developer_mode")
+  customCss             String?   @map("custom_css") @db.Text
+  customJs              String?   @map("custom_js") @db.Text
+  
   // רשתות חברתיות
   facebookUrl           String?   @map("facebook_url")
   instagramUrl          String?   @map("instagram_url")

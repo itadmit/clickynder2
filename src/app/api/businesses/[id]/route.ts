@@ -68,6 +68,10 @@ export async function PATCH(
       'onlinePaymentEnabled',
       'logoUrl',
       'font',
+      'templateStyle',
+      'developerMode',
+      'customCss',
+      'customJs',
     ];
 
     const updateData: any = {};

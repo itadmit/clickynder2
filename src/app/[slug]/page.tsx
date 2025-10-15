@@ -2,6 +2,9 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { BookingFlow } from '@/components/booking/BookingFlow';
 import { AlertCircle, Settings } from 'lucide-react';
+import { ClassicTemplate } from '@/components/booking/templates/ClassicTemplate';
+import { ModernTemplate } from '@/components/booking/templates/ModernTemplate';
+import { MinimalTemplate } from '@/components/booking/templates/MinimalTemplate';
 
 interface BookingPageProps {
   params: {
@@ -61,6 +64,21 @@ export default async function BookingPage({ params }: BookingPageProps) {
   const hasBranches = business.branches.length > 0;
   const isReady = hasServices && hasStaff && hasBranches;
 
+  // Render template based on business.templateStyle
+  if (isReady) {
+    if (business.templateStyle === 'classic') {
+      return <ClassicTemplate business={business} />;
+    }
+    if (business.templateStyle === 'minimal') {
+      return <MinimalTemplate business={business} />;
+    }
+    // Default to modern
+    if (business.templateStyle === 'modern' || !business.templateStyle) {
+      return <ModernTemplate business={business} />;
+    }
+  }
+
+  // Not ready - show setup page
   return (
     <div 
       className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-blue-100 relative"
@@ -70,7 +88,12 @@ export default async function BookingPage({ params }: BookingPageProps) {
     >
 
       {/* Header - Transparent */}
-      <header className="py-4 px-4 sticky top-0 z-50 backdrop-blur-lg shadow-md bg-blue-500/70">
+      <header 
+        className="py-4 px-4 sticky top-0 z-50 backdrop-blur-lg shadow-md"
+        style={{
+          backgroundColor: business.primaryColor ? `${business.primaryColor}B3` : '#3b82f6B3'
+        }}
+      >
         <div className="container mx-auto max-w-5xl">
           <div className="flex items-center justify-center gap-4">
             {business.logoUrl && (
