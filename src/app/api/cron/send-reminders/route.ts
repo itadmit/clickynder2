@@ -61,15 +61,6 @@ export async function POST(req: NextRequest) {
                 gte: reminderTime,
                 lte: new Date(reminderTime.getTime() + 60 * 60 * 1000), // תוך שעה מהזמן המתוזמן
               },
-              // בדוק שלא נשלחה תזכורת כבר
-              notifications: {
-                none: {
-                  event: 'booking_reminder',
-                  createdAt: {
-                    gte: new Date(now.getTime() - 24 * 60 * 60 * 1000), // לא נשלחה ב-24 שעות האחרונות
-                  },
-                },
-              },
             },
             include: {
               customer: true,
@@ -77,11 +68,24 @@ export async function POST(req: NextRequest) {
               staff: true,
               branch: true,
               business: true,
+              notifications: {
+                where: {
+                  event: 'booking_reminder',
+                  sentAt: {
+                    gte: new Date(now.getTime() - 24 * 60 * 60 * 1000), // ב-24 שעות האחרונות
+                  },
+                },
+              },
             },
           });
 
+          // סנן תורים שכבר נשלחה להם תזכורת לאחרונה
+          const filteredAppointments = appointmentsForReminder.filter(
+            (apt) => apt.notifications.length === 0
+          );
+
           // שלח תזכורת לכל תור
-          for (const appointment of appointmentsForReminder) {
+          for (const appointment of filteredAppointments) {
             try {
               await sendNotificationFromTemplate(
                 business.id,
@@ -111,14 +115,6 @@ export async function POST(req: NextRequest) {
                 gte: confirmationTime,
                 lte: new Date(confirmationTime.getTime() + 60 * 60 * 1000), // תוך שעה
               },
-              // בדוק שלא נשלחה בקשת אישור כבר
-              confirmations: {
-                none: {
-                  createdAt: {
-                    gte: new Date(now.getTime() - 24 * 60 * 60 * 1000),
-                  },
-                },
-              },
             },
             include: {
               customer: true,
@@ -126,11 +122,23 @@ export async function POST(req: NextRequest) {
               staff: true,
               branch: true,
               business: true,
+              confirmations: {
+                where: {
+                  createdAt: {
+                    gte: new Date(now.getTime() - 24 * 60 * 60 * 1000),
+                  },
+                },
+              },
             },
           });
 
+          // סנן תורים שכבר נשלחה להם בקשת אישור
+          const filteredConfirmations = appointmentsForConfirmation.filter(
+            (apt) => apt.confirmations.length === 0
+          );
+
           // שלח בקשת אישור לכל תור
-          for (const appointment of appointmentsForConfirmation) {
+          for (const appointment of filteredConfirmations) {
             try {
               // צור token אישור
               const confirmationToken = `conf_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
