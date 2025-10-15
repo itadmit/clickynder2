@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
                   recipient: appointment.customer.phone || appointment.customer.email || '',
                   subject: null,
                   body: `תזכורת לתור שלך ב-${appointment.startAt.toLocaleString('he-IL')}`,
-                  status: 'pending',
+                  status: 'queued',
                 },
               });
               
