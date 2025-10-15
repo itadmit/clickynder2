@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { sendNotificationFromTemplate } from '@/lib/notifications/notification-service';
 
 /**
  * Cron job לשליחת תזכורות והתראות
@@ -87,13 +86,23 @@ export async function POST(req: NextRequest) {
           // שלח תזכורת לכל תור
           for (const appointment of filteredAppointments) {
             try {
-              await sendNotificationFromTemplate(
-                business.id,
-                'booking_reminder',
-                appointment.id
-              );
+              // בינתיים רק נתעד - TODO: integrate with actual notification service
+              await prisma.notification.create({
+                data: {
+                  businessId: business.id,
+                  appointmentId: appointment.id,
+                  customerId: appointment.customerId,
+                  channel: 'whatsapp',
+                  event: 'booking_reminder',
+                  recipient: appointment.customer.phone || appointment.customer.email || '',
+                  subject: null,
+                  body: `תזכורת לתור שלך ב-${appointment.startAt.toLocaleString('he-IL')}`,
+                  status: 'pending',
+                },
+              });
+              
               results.reminders++;
-              console.log(`✅ Reminder sent for appointment ${appointment.id}`);
+              console.log(`✅ Reminder queued for appointment ${appointment.id}`);
             } catch (error) {
               console.error(`❌ Failed to send reminder for appointment ${appointment.id}:`, error);
               results.errors++;
