@@ -477,6 +477,7 @@ model Appointment {
   staff            Staff?              @relation(fields: [staffId], references: [id], onDelete: SetNull)
   customer         Customer            @relation(fields: [customerId], references: [id], onDelete: Cascade)
   appointmentAudit AppointmentAudit[]
+  pendingEdits     PendingAppointmentEdit[]
   notifications    Notification[]
   dashboardNotifications DashboardNotification[]
   payments         Payment[]
@@ -521,6 +522,35 @@ model AppointmentAudit {
 
   @@index([appointmentId, changedAt])
   @@map("appointment_audit")
+}
+
+// שינויים ממתינים לאישור לקוח
+model PendingAppointmentEdit {
+  id                  String   @id @default(cuid())
+  appointmentId       String   @map("appointment_id")
+  newStartAt          DateTime @map("new_start_at")
+  newEndAt            DateTime @map("new_end_at")
+  newServiceId        String   @map("new_service_id")
+  newStaffId          String   @map("new_staff_id")
+  confirmationToken   String   @unique @map("confirmation_token")
+  status              PendingEditStatus @default(pending)
+  createdAt           DateTime @default(now()) @map("created_at")
+  expiresAt           DateTime @map("expires_at")
+  confirmedAt         DateTime? @map("confirmed_at")
+  rejectedAt          DateTime? @map("rejected_at")
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  @@index([appointmentId, status])
+  @@index([confirmationToken])
+  @@map("pending_appointment_edits")
+}
+
+enum PendingEditStatus {
+  pending
+  confirmed
+  rejected
+  expired
 }
 
 // ============================================
@@ -588,6 +618,7 @@ enum NotificationEvent {
   booking_canceled
   booking_rescheduled
   admin_new_booking
+  appointment_edit_request
 }
 
 model Notification {

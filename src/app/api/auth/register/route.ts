@@ -261,6 +261,31 @@ export async function POST(req: NextRequest) {
 {business_name}`,
           active: true,
         },
+        {
+          businessId: user.ownedBusinesses[0].id,
+          channel: 'whatsapp' as const,
+          event: 'appointment_edit_request' as const,
+          subject: null,
+          body: `היי {customer_name}! 📝
+
+יש לנו בקשה לשינוי בתור שלך:
+
+🔴 מועד ישן:
+📅 {old_date}
+🕒 {old_time}
+
+🟢 מועד חדש מוצע:
+📅 {new_date}
+🕒 {new_time}
+💈 שירות: {service_name}
+👤 מטפל/ת: {staff_name}
+
+⏰ לחץ על הקישור לאישור או דחיה:
+{confirmation_link}
+
+{business_name}`,
+          active: true,
+        },
       ];
 
       await prisma.notificationTemplate.createMany({

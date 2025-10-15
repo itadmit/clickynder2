@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
+import { EditAppointmentModal } from '@/components/appointments/EditAppointmentModal';
 import { formatPrice } from '@/lib/utils';
 import { toast } from 'react-hot-toast';
 import {
@@ -18,10 +19,12 @@ import {
   XCircle,
   AlertCircle,
   ArrowRight,
+  Edit3,
 } from 'lucide-react';
 
 interface Appointment {
   id: string;
+  businessId: string;
   startAt: string;
   endAt: string;
   status: string;
@@ -29,6 +32,8 @@ interface Appointment {
   notesCustomer?: string;
   notesInternal?: string;
   confirmationCode: string;
+  serviceId: string;
+  staffId: string;
   business?: {
     currency: string;
   };
@@ -58,6 +63,7 @@ export default function AppointmentDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [notesInternal, setNotesInternal] = useState('');
+  const [showEditModal, setShowEditModal] = useState(false);
 
   useEffect(() => {
     fetchAppointment();
@@ -301,7 +307,16 @@ export default function AppointmentDetailPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Appointment Details */}
             <div className="card">
-              <h3 className="text-lg font-bold mb-4">פרטי התור</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">פרטי התור</h3>
+                <button
+                  onClick={() => setShowEditModal(true)}
+                  className="flex items-center gap-1.5 text-primary-600 hover:text-primary-700 transition-colors group"
+                >
+                  <Edit3 className="w-4 h-4" />
+                  <small className="text-xs font-medium">עריכה</small>
+                </button>
+              </div>
 
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
@@ -453,6 +468,23 @@ export default function AppointmentDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {appointment && (
+        <EditAppointmentModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          appointmentId={appointment.id}
+          currentData={{
+            startAt: appointment.startAt,
+            endAt: appointment.endAt,
+            serviceId: appointment.serviceId,
+            staffId: appointment.staffId,
+            businessId: appointment.businessId,
+          }}
+          onSuccess={fetchAppointment}
+        />
+      )}
     </div>
   );
 }

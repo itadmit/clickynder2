@@ -18,6 +18,7 @@ const DEFAULT_WHATSAPP_TEMPLATES = [
 🕒 שעה: {appointment_time}
 💈 שירות: {service_name}
 👤 מטפל/ת: {staff_name}
+📍 סניף: {branch_name}
 🏢 {business_name}
 
 נשמח לראותך! 😊`,
@@ -34,6 +35,7 @@ const DEFAULT_WHATSAPP_TEMPLATES = [
 🕒 שעה: {appointment_time}
 💈 שירות: {service_name}
 👤 מטפל/ת: {staff_name}
+📍 סניף: {branch_name}
 
 נתראה! 🙂
 {business_name}`,
@@ -49,6 +51,7 @@ const DEFAULT_WHATSAPP_TEMPLATES = [
 📅 תאריך שבוטל: {appointment_date}
 🕒 שעה: {appointment_time}
 💈 שירות: {service_name}
+📍 סניף: {branch_name}
 
 אנחנו כאן אם תרצה לקבוע תור חדש 😊
 
@@ -67,6 +70,7 @@ const DEFAULT_WHATSAPP_TEMPLATES = [
 🕒 שעה: {appointment_time}
 💈 שירות: {service_name}
 👤 מטפל/ת: {staff_name}
+📍 סניף: {branch_name}
 
 נתראה! 🙂
 {business_name}`,
@@ -82,6 +86,31 @@ const DEFAULT_WHATSAPP_TEMPLATES = [
 🕒 שעה: {appointment_time}
 💈 שירות: {service_name}
 👨‍💼 מטפל/ת: {staff_name}
+📍 סניף: {branch_name}
+
+{business_name}`,
+  },
+  {
+    channel: 'whatsapp' as NotificationChannel,
+    event: 'appointment_edit_request' as NotificationEvent,
+    subject: null,
+    body: `היי {customer_name}! 📝
+
+יש לנו בקשה לשינוי בתור שלך:
+
+🔴 מועד ישן:
+📅 {old_date}
+🕒 {old_time}
+
+🟢 מועד חדש מוצע:
+📅 {new_date}
+🕒 {new_time}
+💈 שירות: {service_name}
+👤 מטפל/ת: {staff_name}
+📍 סניף: {branch_name}
+
+⏰ לחץ על הקישור לאישור או דחיה:
+{confirmation_link}
 
 {business_name}`,
   },

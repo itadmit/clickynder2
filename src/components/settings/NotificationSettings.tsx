@@ -118,6 +118,7 @@ export function NotificationSettings({ businessId, templates }: NotificationSett
       '{business_name}': 'העסק שלי',
       '{service_name}': 'תספורת גברים',
       '{staff_name}': 'דני המספר',
+      '{branch_name}': 'סניף תל אביב',
       '{appointment_date}': '15/10/2025',
       '{appointment_time}': '10:00',
       '{confirmation_code}': 'ABC123',
@@ -161,7 +162,7 @@ export function NotificationSettings({ businessId, templates }: NotificationSett
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <p className="text-sm text-blue-800">
           <strong>משתנים זמינים:</strong> {'{customer_name}'}, {'{business_name}'}, 
-          {' {service_name}'}, {'{staff_name}'}, {'{appointment_date}'}, 
+          {' {service_name}'}, {'{staff_name}'}, {'{branch_name}'}, {'{appointment_date}'}, 
           {'{appointment_time}'}, {'{confirmation_code}'}
         </p>
         <p className="text-xs text-blue-600 mt-2">
@@ -332,6 +333,7 @@ export function NotificationSettings({ businessId, templates }: NotificationSett
                                   business_name: 'העסק שלי',
                                   service_name: 'תספורת גברים',
                                   staff_name: 'דני המספר',
+                                  branch_name: 'סניף תל אביב',
                                   appointment_date: '15/10/2025',
                                   appointment_time: '10:00',
                                   confirmation_code: 'ABC123',

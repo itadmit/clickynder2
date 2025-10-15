@@ -32,6 +32,7 @@
 - `{business_name}` - שם העסק
 - `{service_name}` - שם השירות
 - `{staff_name}` - שם העובד/ת
+- `{branch_name}` - שם הסניף
 - `{appointment_date}` - תאריך התור
 - `{appointment_time}` - שעת התור
 - `{confirmation_code}` - קוד אישור (אם רלוונטי)
@@ -82,6 +83,7 @@
 🕒 שעה: {appointment_time}
 💈 שירות: {service_name}
 👤 מטפל/ת: {staff_name}
+📍 סניף: {branch_name}
 🏢 {business_name}
 
 נשמח לראותך! 😊
