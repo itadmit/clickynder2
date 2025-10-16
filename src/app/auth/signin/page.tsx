@@ -70,9 +70,9 @@ export default function SignInPage() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
         <div className="w-full max-w-md space-y-8 animate-fade-in">
           {/* Logo */}
-          <div className="text-center lg:text-right">
+          <div className="text-center">
             <Link href="/">
-              <img src="/assets/logo.png" alt="Clickinder" className="h-14 mb-4" />
+              <img src="/assets/logo.png" alt="Clickinder" className="h-14 mb-4 mx-auto" />
             </Link>
           </div>
 

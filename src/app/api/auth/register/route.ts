@@ -66,6 +66,8 @@ export async function POST(req: NextRequest) {
             name: validatedData.city, // שם העיר כשם העסק
             slug: validatedData.businessSlug,
             address: validatedData.businessAddress,
+            phone: validatedData.phone, // טלפון מפרטי המשתמש
+            email: validatedData.email, // אימייל מפרטי המשתמש
             timezone: 'Asia/Jerusalem',
             locale: 'he-IL',
             showStaff: true,

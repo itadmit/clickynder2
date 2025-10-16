@@ -33,6 +33,7 @@ export function AdminDashboard({ users: initialUsers, systemSettings: initialSet
   const [systemSettings, setSystemSettings] = useState(initialSettings);
   const [sendingTest, setSendingTest] = useState(false);
   const [testPhone, setTestPhone] = useState('');
+  const [changingPackage, setChangingPackage] = useState<string | null>(null);
 
   // Filter users
   const filteredUsers = users.filter(
@@ -61,7 +62,13 @@ export function AdminDashboard({ users: initialUsers, systemSettings: initialSet
     }
   };
 
-  const handleToggleSuperAdmin = async (userId: string, currentStatus: boolean) => {
+  const handleToggleSuperAdmin = async (userId: string, currentStatus: boolean, userEmail: string) => {
+    // מניעת הורדת הרשאות מעצמך
+    if (userEmail === 'itadmit@gmail.com' && currentStatus === true) {
+      alert('❌ לא ניתן להוריד הרשאות סופר אדמין מהמשתמש הראשי');
+      return;
+    }
+
     try {
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'PATCH',
@@ -140,6 +147,49 @@ export function AdminDashboard({ users: initialUsers, systemSettings: initialSet
 
   const getRappelsendApiToken = () => {
     return systemSettings.find((s) => s.key === 'rappelsend_api_token')?.value || '';
+  };
+
+  const handleChangePackage = async (businessId: string) => {
+    const packageCode = prompt('הזן קוד חבילה (starter/professional/premium/enterprise):');
+    if (!packageCode || !['starter', 'professional', 'premium', 'enterprise'].includes(packageCode.toLowerCase())) {
+      alert('קוד חבילה לא תקין');
+      return;
+    }
+
+    setChangingPackage(businessId);
+    try {
+      const response = await fetch(`/api/admin/subscriptions/${businessId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ packageCode: packageCode.toLowerCase() }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to change package');
+      }
+
+      const updatedSubscription = await response.json();
+      
+      // Update the local state
+      setUsers((prev) =>
+        prev.map((u) => ({
+          ...u,
+          ownedBusinesses: u.ownedBusinesses.map((b) =>
+            b.id === businessId
+              ? { ...b, subscription: updatedSubscription }
+              : b
+          ),
+        }))
+      );
+
+      alert('החבילה עודכנה בהצלחה! ✅');
+    } catch (error) {
+      console.error('Error changing package:', error);
+      alert(`שגיאה בשינוי חבילה: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setChangingPackage(null);
+    }
   };
 
   const handleSendTestMessage = async () => {
@@ -358,7 +408,7 @@ export function AdminDashboard({ users: initialUsers, systemSettings: initialSet
                               <div className="text-xs text-gray-500">
                                 {user.ownedBusinesses[0].subscription.package.name}
                               </div>
-                              <div className="flex gap-2 mt-2">
+                              <div className="flex flex-wrap gap-2 mt-2">
                                 {user.ownedBusinesses[0].subscription.status === 'trial' && (
                                   <button
                                     onClick={() =>
@@ -385,6 +435,13 @@ export function AdminDashboard({ users: initialUsers, systemSettings: initialSet
                                     העבר לניסיון
                                   </button>
                                 )}
+                                <button
+                                  onClick={() => handleChangePackage(user.ownedBusinesses[0].id)}
+                                  disabled={changingPackage === user.ownedBusinesses[0].id}
+                                  className="text-xs text-purple-600 hover:text-purple-700 underline disabled:opacity-50"
+                                >
+                                  {changingPackage === user.ownedBusinesses[0].id ? 'מעדכן...' : 'שנה חבילה'}
+                                </button>
                               </div>
                             </div>
                           ) : (
@@ -395,7 +452,7 @@ export function AdminDashboard({ users: initialUsers, systemSettings: initialSet
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() =>
-                                handleToggleSuperAdmin(user.id, user.isSuperAdmin)
+                                handleToggleSuperAdmin(user.id, user.isSuperAdmin, user.email)
                               }
                               className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                                 user.isSuperAdmin
@@ -407,6 +464,7 @@ export function AdminDashboard({ users: initialUsers, systemSettings: initialSet
                                 <>
                                   <Shield className="w-3 h-3" />
                                   Super Admin
+                                  {user.email === 'itadmit@gmail.com' && ' 🔒'}
                                 </>
                               ) : (
                                 <>משתמש רגיל</>

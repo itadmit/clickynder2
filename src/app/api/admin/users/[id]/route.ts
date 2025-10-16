@@ -28,6 +28,21 @@ export async function PATCH(
     const userId = params.id;
     const data = await request.json();
 
+    // בדיקה שלא מנסים להוריד הרשאות מהמשתמש הראשי
+    if (data.isSuperAdmin === false) {
+      const targetUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true, isSuperAdmin: true },
+      });
+
+      if (targetUser?.email === 'itadmit@gmail.com' && targetUser.isSuperAdmin) {
+        return NextResponse.json(
+          { error: 'Cannot remove Super Admin privileges from the primary admin user' },
+          { status: 403 }
+        );
+      }
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {

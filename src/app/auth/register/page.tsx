@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { 
   User, Mail, Phone, Lock, Eye, EyeOff, 
   Building2, MapPin, Link as LinkIcon, 
   ArrowRight, ArrowLeft, Check,
-  Clock, Calendar, Users, Bell
+  Clock, Calendar, Users, Bell, Loader2, CheckCircle, XCircle
 } from 'lucide-react';
 import Link from 'next/link';
 import confetti from 'canvas-confetti';
@@ -20,6 +20,9 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [slugCheckStatus, setSlugCheckStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
+  const [slugCheckTimeout, setSlugCheckTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [setupStep, setSetupStep] = useState(0);
   
   // Form data
   const [formData, setFormData] = useState({
@@ -45,6 +48,15 @@ export default function RegisterPage() {
     }
   }, [status, router]);
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (slugCheckTimeout) {
+        clearTimeout(slugCheckTimeout);
+      }
+    };
+  }, [slugCheckTimeout]);
+
   // Show loading while checking session
   if (status === 'loading') {
     return (
@@ -62,8 +74,69 @@ export default function RegisterPage() {
     return null;
   }
 
+  // Check slug availability
+  const checkSlugAvailability = async (slug: string) => {
+    if (!slug || slug.length < 2) {
+      setSlugCheckStatus('idle');
+      return;
+    }
+
+    // Validate format first
+    if (!/^[a-z0-9-]+$/.test(slug)) {
+      setSlugCheckStatus('idle');
+      return;
+    }
+
+    setSlugCheckStatus('checking');
+
+    try {
+      const response = await fetch(`/api/businesses/check-slug?slug=${encodeURIComponent(slug)}`);
+      const data = await response.json();
+
+      if (response.ok) {
+        setSlugCheckStatus(data.available ? 'available' : 'taken');
+      } else {
+        setSlugCheckStatus('idle');
+      }
+    } catch (error) {
+      console.error('Error checking slug:', error);
+      setSlugCheckStatus('idle');
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    
+    // Block Hebrew characters in businessSlug
+    if (name === 'businessSlug') {
+      // Remove Hebrew characters and any non-allowed characters
+      const filteredValue = value
+        .replace(/[\u0590-\u05FF]/g, '') // Remove Hebrew
+        .replace(/[^a-z0-9-]/g, '') // Keep only lowercase English, numbers, and hyphens
+        .toLowerCase();
+      
+      setFormData(prev => ({ ...prev, [name]: filteredValue }));
+      
+      // Clear error for this field
+      if (errors[name]) {
+        setErrors(prev => ({ ...prev, [name]: '' }));
+      }
+
+      // Clear previous timeout
+      if (slugCheckTimeout) {
+        clearTimeout(slugCheckTimeout);
+      }
+
+      // Set new timeout for checking
+      const timeout = setTimeout(() => {
+        checkSlugAvailability(filteredValue);
+      }, 500); // Wait 500ms after user stops typing
+
+      setSlugCheckTimeout(timeout);
+      setSlugCheckStatus('idle');
+      return;
+    }
+    
     setFormData(prev => ({ ...prev, [name]: value }));
     
     // Clear error for this field
@@ -78,6 +151,15 @@ export default function RegisterPage() {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '');
       setFormData(prev => ({ ...prev, businessSlug: slug }));
+      
+      // Check the auto-generated slug
+      if (slugCheckTimeout) {
+        clearTimeout(slugCheckTimeout);
+      }
+      const timeout = setTimeout(() => {
+        checkSlugAvailability(slug);
+      }, 500);
+      setSlugCheckTimeout(timeout);
     }
   };
 
@@ -111,6 +193,12 @@ export default function RegisterPage() {
     if (!formData.businessSlug.trim()) newErrors.businessSlug = 'כתובת URL היא שדה חובה';
     else if (!/^[a-z0-9-]+$/.test(formData.businessSlug)) {
       newErrors.businessSlug = 'רק אותיות אנגליות קטנות, מספרים ומקפים';
+    } else if (slugCheckStatus === 'taken') {
+      newErrors.businessSlug = 'הכתובת תפוסה, אנא בחר כתובת אחרת';
+    } else if (slugCheckStatus === 'checking') {
+      newErrors.businessSlug = 'בודק זמינות...';
+    } else if (slugCheckStatus !== 'available') {
+      newErrors.businessSlug = 'אנא המתן לבדיקת זמינות הכתובת';
     }
     if (!formData.businessAddress.trim()) newErrors.businessAddress = 'כתובת העסק היא שדה חובה';
     if (!formData.city.trim()) newErrors.city = 'עיר היא שדה חובה';
@@ -135,6 +223,23 @@ export default function RegisterPage() {
     if (!validateStep2()) return;
 
     setIsLoading(true);
+    setStep(3);
+
+    // Simulate setup steps with delays
+    const setupSteps = [
+      { text: 'מכין לך את הדשבורד...', delay: 300 },
+      { text: 'יוצר סניף ברירת מחדל...', delay: 800 },
+      { text: 'יוצר עובד ברירת מחדל...', delay: 1300 },
+      { text: 'יוצר שירות ברירת מחדל...', delay: 1800 },
+      { text: 'סיימתי! 🎉', delay: 2300 },
+    ];
+
+    // Show setup steps
+    setupSteps.forEach((step, index) => {
+      setTimeout(() => {
+        setSetupStep(index + 1);
+      }, step.delay);
+    });
 
     try {
       const response = await fetch('/api/auth/register', {
@@ -157,58 +262,114 @@ export default function RegisterPage() {
         throw new Error(data.error || 'שגיאה בהרשמה');
       }
 
-      // Success - move to step 3
-      setStep(3);
+      // Wait for all setup steps to show
+      await new Promise(resolve => setTimeout(resolve, 2500));
       
-      // Fire confetti
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
+      // Sign in the user automatically
+      const result = await signIn('credentials', {
+        email: formData.email,
+        password: formData.password,
+        redirect: false,
       });
 
-      // Auto redirect after 2 seconds
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 2000);
+      if (result?.error) {
+        toast.error('נרשמת בהצלחה! אנא התחבר');
+        setTimeout(() => {
+          router.push('/auth/signin');
+        }, 1000);
+      } else {
+        // Fire confetti
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+
+        // Wait a bit before redirecting to dashboard
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 1000);
+      }
 
     } catch (error: any) {
       toast.error(error.message || 'שגיאה בהרשמה');
       setIsLoading(false);
+      setStep(2);
     }
   };
 
-  // Step 3: Success Screen
+  // Step 3: Setup/Loading Screen
   if (step === 3) {
+    const setupSteps = [
+      'מכין לך את הדשבורד...',
+      'יוצר סניף ברירת מחדל...',
+      'יוצר עובד ברירת מחדל...',
+      'יוצר שירות ברירת מחדל...',
+      'סיימתי! 🎉'
+    ];
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full text-center">
           <div className="bg-white rounded-2xl shadow-xl p-8">
-            <div className="mb-6">
-              <img
-                src="/assets/success-illustration.svg"
-                alt="Success"
-                className="w-48 h-48 mx-auto"
-              />
-            </div>
-            
-            <div className="mb-6">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Check className="w-10 h-10 text-green-600" />
-              </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                ההרשמה הושלמה בהצלחה! 🎉
-              </h1>
-              <p className="text-gray-600">
-                הפרופיל שלך מוכן. מעביר אותך לדשבורד...
-              </p>
-            </div>
+            {setupStep < 5 ? (
+              <>
+                <div className="mb-6">
+                  <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+                  </div>
+                  <h1 className="text-2xl font-bold text-gray-900 mb-4">
+                    מגדיר את המערכת שלך...
+                  </h1>
+                </div>
 
-            <div className="flex items-center justify-center gap-2 text-blue-600">
-              <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-              <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-              <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-            </div>
+                <div className="space-y-3 text-right">
+                  {setupSteps.slice(0, 4).map((stepText, index) => (
+                    <div
+                      key={index}
+                      className={`flex items-center gap-3 p-3 rounded-lg transition-all ${
+                        setupStep > index
+                          ? 'bg-green-50 text-green-700'
+                          : setupStep === index + 1
+                          ? 'bg-blue-50 text-blue-700'
+                          : 'bg-gray-50 text-gray-400'
+                      }`}
+                    >
+                      <div className="flex-shrink-0">
+                        {setupStep > index + 1 ? (
+                          <Check className="w-5 h-5 text-green-600" />
+                        ) : setupStep === index + 1 ? (
+                          <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
+                        ) : (
+                          <div className="w-5 h-5 rounded-full border-2 border-gray-300" />
+                        )}
+                      </div>
+                      <span className="font-medium">{stepText}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="mb-6">
+                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Check className="w-12 h-12 text-green-600" />
+                  </div>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                    סיימתי! 🎉
+                  </h1>
+                  <p className="text-gray-600">
+                    מעביר אותך לדשבורד...
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-center gap-2 text-blue-600">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -221,16 +382,16 @@ export default function RegisterPage() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white overflow-y-auto">
         <div className="w-full max-w-md space-y-6 animate-fade-in">
           {/* Logo */}
-          <div className="text-center lg:text-right">
+          <div className="text-center">
             <Link href="/">
-              <img src="/assets/logo.png" alt="Clickynder" className="h-14 mb-4" />
+              <img src="/assets/logo.png" alt="Clickynder" className="h-14 mb-4 mx-auto" />
             </Link>
           </div>
 
           {/* Progress Steps */}
           <div className="mb-6">
-            <div className="flex items-center justify-center gap-4">
-              {[1, 2].map((s) => (
+            <div className="flex items-center justify-center">
+              {[1, 2].map((s, index) => (
                 <div key={s} className="flex items-center">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${
                     s === step 
@@ -241,8 +402,8 @@ export default function RegisterPage() {
                   }`}>
                     {s < step ? <Check className="w-6 h-6" /> : s}
                   </div>
-                  {s < 2 && (
-                    <div className={`w-16 h-1 ${s < step ? 'bg-green-500' : 'bg-gray-200'}`}></div>
+                  {index < 1 && (
+                    <div className={`w-16 h-1 mx-2 ${s < step ? 'bg-green-500' : step === 2 ? 'bg-green-500' : 'bg-gray-200'}`}></div>
                   )}
                 </div>
               ))}
@@ -394,19 +555,59 @@ export default function RegisterPage() {
                     כתובת URL לקביעת תורים *
                   </label>
                   <div className="flex items-center gap-2">
-                    <span className="text-gray-500 text-sm">clickynder.com/</span>
-                    <input
-                      type="text"
-                      name="businessSlug"
-                      value={formData.businessSlug}
-                      onChange={handleChange}
-                      className={`form-input flex-1 ${errors.businessSlug ? 'border-red-500' : ''}`}
-                      placeholder="my-business"
-                      dir="ltr"
-                    />
+                    <div className="relative flex-1">
+                      <input
+                        type="text"
+                        name="businessSlug"
+                        value={formData.businessSlug}
+                        onChange={handleChange}
+                        className={`form-input w-full pr-10 ${
+                          errors.businessSlug 
+                            ? 'border-red-500' 
+                            : slugCheckStatus === 'available' 
+                            ? 'border-green-500' 
+                            : slugCheckStatus === 'taken'
+                            ? 'border-red-500'
+                            : ''
+                        }`}
+                        placeholder="my-business"
+                        dir="ltr"
+                      />
+                      {/* Status Icon inside input - right side */}
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                        {slugCheckStatus === 'checking' && (
+                          <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                        )}
+                        {slugCheckStatus === 'available' && (
+                          <Check className="w-5 h-5 text-green-500 font-bold" />
+                        )}
+                        {slugCheckStatus === 'taken' && (
+                          <XCircle className="w-5 h-5 text-red-500" />
+                        )}
+                      </div>
+                    </div>
+                    <span className="text-gray-500 text-sm whitespace-nowrap">/clickynder.com</span>
                   </div>
-                  {errors.businessSlug && <p className="text-red-500 text-sm mt-1">{errors.businessSlug}</p>}
-                  <p className="text-xs text-gray-500 mt-1">רק אותיות אנגליות קטנות, מספרים ומקפים</p>
+                  
+                  {/* Status Messages */}
+                  {slugCheckStatus === 'available' && !errors.businessSlug && (
+                    <p className="text-green-600 text-sm mt-1 flex items-center gap-1">
+                      <CheckCircle className="w-4 h-4" />
+                      הכתובת פנויה
+                    </p>
+                  )}
+                  {slugCheckStatus === 'taken' && (
+                    <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                      <XCircle className="w-4 h-4" />
+                      הכתובת תפוסה
+                    </p>
+                  )}
+                  {errors.businessSlug && slugCheckStatus !== 'available' && slugCheckStatus !== 'taken' && (
+                    <p className="text-red-500 text-sm mt-1">{errors.businessSlug}</p>
+                  )}
+                  {!errors.businessSlug && slugCheckStatus !== 'available' && slugCheckStatus !== 'taken' && (
+                    <p className="text-xs text-gray-500 mt-1">רק אותיות אנגליות קטנות, מספרים ומקפים</p>
+                  )}
                 </div>
 
                 {/* Business Address */}
@@ -421,7 +622,7 @@ export default function RegisterPage() {
                     value={formData.businessAddress}
                     onChange={handleChange}
                     className={`form-input ${errors.businessAddress ? 'border-red-500' : ''}`}
-                    placeholder="רחוב דרך מנחם בגין 23, תל אביב"
+                    placeholder="דרך מנחם בגין 23"
                   />
                   {errors.businessAddress && <p className="text-red-500 text-sm mt-1">{errors.businessAddress}</p>}
                 </div>
