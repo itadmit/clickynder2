@@ -8,7 +8,7 @@ import { he } from 'date-fns/locale';
 
 interface Notification {
   id: string;
-  type: 'new_appointment' | 'cancelled_appointment' | 'reminder' | 'system';
+  type: 'new_appointment' | 'cancelled_appointment' | 'appointment_confirmed' | 'appointment_canceled' | 'reminder' | 'system';
   title: string;
   message: string;
   read: boolean;
