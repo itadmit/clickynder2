@@ -837,4 +837,13 @@ model SystemSettings {
 // הגדרות Rappelsend יישמרו כ:
 // key: "rappelsend_client_id", value: "..."
 // key: "rappelsend_api_token", value: "..." (encrypted)
+//
+// הגדרות Google SMTP יישמרו כ:
+// key: "smtp_host", value: "smtp.gmail.com"
+// key: "smtp_port", value: "587"
+// key: "smtp_secure", value: "false" (STARTTLS)
+// key: "smtp_user", value: "your-email@gmail.com"
+// key: "smtp_password", value: "..." (encrypted - App Password)
+// key: "smtp_from_name", value: "Clickynder"
+// key: "smtp_from_email", value: "your-email@gmail.com"
 

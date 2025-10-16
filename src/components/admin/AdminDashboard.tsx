@@ -16,6 +16,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { EditUserModal } from './EditUserModal';
+import { SMTPSettingsSection } from './SMTPSettingsSection';
 import { toast } from 'react-hot-toast';
 import { UserWithBusinesses } from '@/types/admin';
 
@@ -505,13 +506,16 @@ export function AdminDashboard({ users: initialUsers, systemSettings: initialSet
               </div>
             </div>
 
+            {/* Google SMTP Settings */}
+            <SMTPSettingsSection />
+
             {/* Other System Settings */}
             <div className="card">
               <h2 className="text-xl font-bold mb-6">הגדרות מערכת נוספות</h2>
               <div className="space-y-4">
                 {systemSettings
                   .filter(
-                    (s) => !s.key.startsWith('rappelsend_')
+                    (s) => !s.key.startsWith('rappelsend_') && !s.key.startsWith('smtp_')
                   )
                   .map((setting) => (
                     <div key={setting.id} className="border-b border-gray-200 pb-4 last:border-0">
