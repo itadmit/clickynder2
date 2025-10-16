@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { User, Business, SystemSettings, Subscription, Package } from '@prisma/client';
+import { SystemSettings, Subscription, Package, Business } from '@prisma/client';
 import {
   Users,
   Building2,
@@ -17,8 +17,9 @@ import {
 } from 'lucide-react';
 import { EditUserModal } from './EditUserModal';
 import { toast } from 'react-hot-toast';
+import { UserWithBusinesses } from '@/types/admin';
 
-type UserWithBusinesses = User & {
+type UserWithBusinessesExtended = UserWithBusinesses & {
   ownedBusinesses: (Business & {
     subscription: (Subscription & { package: Package }) | null;
     appointments: { id: string }[];
