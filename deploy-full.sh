@@ -99,7 +99,7 @@ echo "Loading image on server..."
 ssh contabo 'sudo docker load < /tmp/clickynder-app.tar.gz'
 
 echo "Restarting services..."
-ssh contabo 'cd ~/app && sudo docker-compose -f docker-compose.prod.yml up -d'
+ssh contabo 'cd /home/clickynder/app && sudo docker-compose -f docker-compose.prod.yml up -d'
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✅ Services restarted${NC}"

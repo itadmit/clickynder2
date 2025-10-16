@@ -12,11 +12,12 @@ const registerSchema = z.object({
   name: z.string().min(2, 'שם חייב להכיל לפחות 2 תווים'),
   email: z.string().email('כתובת אימייל לא תקינה'),
   password: z.string().min(6, 'סיסמה חייבת להכיל לפחות 6 תווים'),
-  phone: z.string().optional(),
-  businessName: z.string().min(2, 'שם עסק חייב להכיל לפחות 2 תווים'),
+  phone: z.string().min(9, 'מספר טלפון לא תקין'),
   businessSlug: z.string()
     .min(3, 'כתובת אתר חייבת להכיל לפחות 3 תווים')
     .regex(/^[a-z0-9-]+$/, 'כתובת אתר יכולה להכיל רק אותיות אנגליות קטנות, מספרים ומקפים'),
+  businessAddress: z.string().min(5, 'כתובת העסק חייבת להכיל לפחות 5 תווים'),
+  city: z.string().min(2, 'שם העיר חייב להכיל לפחות 2 תווים'),
 });
 
 export async function POST(req: NextRequest) {
@@ -62,8 +63,9 @@ export async function POST(req: NextRequest) {
         passwordHash,
         ownedBusinesses: {
           create: {
-            name: validatedData.businessName,
+            name: validatedData.city, // שם העיר כשם העסק
             slug: validatedData.businessSlug,
+            address: validatedData.businessAddress,
             timezone: 'Asia/Jerusalem',
             locale: 'he-IL',
             showStaff: true,
@@ -136,29 +138,40 @@ export async function POST(req: NextRequest) {
         data: businessHours,
       });
 
+      // יצירת סניף ראשון
+      const branch = await prisma.branch.create({
+        data: {
+          businessId: user.ownedBusinesses[0].id,
+          name: validatedData.city,
+          address: validatedData.businessAddress,
+          phone: validatedData.phone || null,
+          active: true,
+        },
+      });
+
       // יצירת עובד ראשון - בעל העסק עצמו
       const staff = await prisma.staff.create({
         data: {
           businessId: user.ownedBusinesses[0].id,
           name: validatedData.name,
           email: validatedData.email,
-          phone: validatedData.phone || null,
+          phone: validatedData.phone,
           roleLabel: 'בעלים',
           active: true,
-          calendarColor: '#0ea5e9', // כחול ברירת מחדל
+          calendarColor: '#0584c7', // הצבע שביקשת
         },
       });
 
-      // יצירת שירות ברירת מחדל
+      // יצירת שירות ברירת מחדל "כללי"
       const service = await prisma.service.create({
         data: {
           businessId: user.ownedBusinesses[0].id,
-          name: 'שירות כללי',
-          durationMin: 60,
-          priceCents: 10000, // 100 ש"ח
+          name: 'כללי',
+          durationMin: 30, // 30 דקות כמו בדוגמה שהראת
+          priceCents: 9900, // 99 ש"ח
           bufferAfterMin: 0,
           active: true,
-          color: '#0ea5e9',
+          color: '#0584c7', // אותו צבע
         },
       });
 
