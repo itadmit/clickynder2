@@ -62,7 +62,7 @@ export function ClassicTemplate({ business }: ClassicTemplateProps) {
         className="min-h-screen"
         style={{ 
           fontFamily: business.font ? `'${business.font}', 'Noto Sans Hebrew', sans-serif` : "'Noto Sans Hebrew', sans-serif",
-          background: `linear-gradient(to bottom, ${business.primaryColor || '#3b82f6'}10, ${business.secondaryColor || '#d946ef'}10)`
+          background: `linear-gradient(to bottom right, ${business.backgroundColorStart || '#eff6ff'}, ${business.backgroundColorEnd || '#dbeafe'})`
         }}
       >
         <div className="max-w-2xl mx-auto px-4 py-8">

@@ -23,8 +23,9 @@ export function ModernTemplate({ business }: ModernTemplateProps) {
       )}
       
       <div 
-        className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-blue-100 relative"
+        className="min-h-screen relative"
         style={{ 
+          background: `linear-gradient(to bottom right, ${business.backgroundColorStart || '#eff6ff'}, ${business.backgroundColorEnd || '#dbeafe'})`,
           fontFamily: business.font ? `'${business.font}', 'Noto Sans Hebrew', sans-serif` : "'Noto Sans Hebrew', sans-serif"
         }}
       >
