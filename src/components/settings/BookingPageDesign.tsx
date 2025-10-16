@@ -49,9 +49,10 @@ export function BookingPageDesign({ business }: BookingPageDesignProps) {
   const [formData, setFormData] = useState({
     logoUrl: business.logoUrl || '',
     templateStyle: business.templateStyle || 'modern',
-    primaryColor: business.primaryColor || '#0ea5e9',
+    primaryColor: business.primaryColor || '#3b82f6',
     secondaryColor: business.secondaryColor || '#d946ef',
-    backgroundColor: business.backgroundColor || '#ffffff',
+    backgroundColorStart: business.backgroundColorStart || '#eff6ff',
+    backgroundColorEnd: business.backgroundColorEnd || '#dbeafe',
     font: business.font || 'Noto Sans Hebrew',
     description: business.description || '',
     showBranches: business.showBranches,
@@ -500,26 +501,50 @@ export function BookingPageDesign({ business }: BookingPageDesignProps) {
             </div>
           )}
 
-          {/* Background Color */}
+          {/* Background Gradient Start Color */}
           <div>
-            <label htmlFor="backgroundColor" className="form-label">
-              צבע רקע
+            <label htmlFor="backgroundColorStart" className="form-label">
+              צבע רקע התחלה
             </label>
             <div className="flex gap-3">
               <input
                 type="color"
-                value={formData.backgroundColor}
-                onChange={(e) => setFormData((prev) => ({ ...prev, backgroundColor: e.target.value }))}
+                value={formData.backgroundColorStart}
+                onChange={(e) => setFormData((prev) => ({ ...prev, backgroundColorStart: e.target.value }))}
                 className="w-20 h-12 rounded-lg border border-gray-300 cursor-pointer"
               />
               <input
                 type="text"
-                value={formData.backgroundColor}
-                onChange={(e) => setFormData((prev) => ({ ...prev, backgroundColor: e.target.value }))}
+                value={formData.backgroundColorStart}
+                onChange={(e) => setFormData((prev) => ({ ...prev, backgroundColorStart: e.target.value }))}
                 className="form-input flex-1"
-                placeholder="#ffffff"
+                placeholder="#eff6ff"
               />
             </div>
+            <p className="text-xs text-gray-500 mt-1">צבע התחלה של gradient הרקע</p>
+          </div>
+
+          {/* Background Gradient End Color */}
+          <div>
+            <label htmlFor="backgroundColorEnd" className="form-label">
+              צבע רקע סיום
+            </label>
+            <div className="flex gap-3">
+              <input
+                type="color"
+                value={formData.backgroundColorEnd}
+                onChange={(e) => setFormData((prev) => ({ ...prev, backgroundColorEnd: e.target.value }))}
+                className="w-20 h-12 rounded-lg border border-gray-300 cursor-pointer"
+              />
+              <input
+                type="text"
+                value={formData.backgroundColorEnd}
+                onChange={(e) => setFormData((prev) => ({ ...prev, backgroundColorEnd: e.target.value }))}
+                className="form-input flex-1"
+                placeholder="#dbeafe"
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-1">צבע סיום של gradient הרקע</p>
           </div>
         </div>
       </div>

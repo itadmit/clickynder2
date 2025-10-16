@@ -49,9 +49,10 @@ model Business {
   // מיתוג
   logoUrl               String?   @map("logo_url")
   templateStyle         String    @default("modern") @map("template_style") // modern, classic, minimal
-  primaryColor          String?   @map("primary_color") @default("#0ea5e9")
+  primaryColor          String?   @map("primary_color") @default("#3b82f6")
   secondaryColor        String?   @map("secondary_color") @default("#d946ef")
-  backgroundColor       String?   @map("background_color") @default("#ffffff")
+  backgroundColorStart  String?   @map("background_color_start") @default("#eff6ff")
+  backgroundColorEnd    String?   @map("background_color_end") @default("#dbeafe")
   font                  String    @default("Noto Sans Hebrew")
   
   // הגדרות
