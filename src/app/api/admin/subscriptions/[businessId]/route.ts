@@ -16,7 +16,7 @@ export async function PATCH(
     const session = await getServerSession(authOptions);
 
     // בדיקת הרשאות Super Admin
-    if (!session?.user?.isSuperAdmin) {
+    if (!(session?.user as any)?.isSuperAdmin) {
       return NextResponse.json(
         { error: 'Unauthorized - Super Admin access required' },
         { status: 403 }
