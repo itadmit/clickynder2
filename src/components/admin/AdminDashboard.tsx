@@ -382,8 +382,8 @@ export function AdminDashboard({ users: initialUsers, systemSettings: initialSet
                               <Trash2 className="w-4 h-4" />
                             </button>
                             {user.isSuperAdmin && (
-                              <div className="mr-2">
-                                <Shield className="w-4 h-4 text-red-600" title="Super Admin" />
+                              <div className="mr-2" title="Super Admin">
+                                <Shield className="w-4 h-4 text-red-600" />
                               </div>
                             )}
                           </div>
