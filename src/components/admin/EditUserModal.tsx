@@ -188,7 +188,7 @@ export function EditUserModal({ user, onClose, onSuccess }: EditUserModalProps) 
               </label>
               <select
                 value={formData.packageCode}
-                onChange={(e) => setFormData({ ...formData, packageCode: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, packageCode: e.target.value as any })}
                 className="form-input"
               >
                 <option value="trial">ניסיון (Trial)</option>
