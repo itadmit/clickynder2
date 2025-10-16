@@ -78,15 +78,17 @@ export async function PATCH(
       });
     } else {
       // יצירת מנוי חדש
-      const trialEndDate = new Date();
-      trialEndDate.setDate(trialEndDate.getDate() + 14); // 14 ימי ניסיון
+      const currentPeriodStart = new Date();
+      const currentPeriodEnd = new Date();
+      currentPeriodEnd.setDate(currentPeriodEnd.getDate() + 14); // 14 ימי ניסיון
 
       updatedSubscription = await prisma.subscription.create({
         data: {
           businessId: business.id,
           packageId: targetPackage.id,
           status: 'trial',
-          trialEndDate,
+          currentPeriodStart,
+          currentPeriodEnd,
         },
         include: {
           package: true,
