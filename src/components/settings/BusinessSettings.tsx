@@ -164,9 +164,11 @@ export function BusinessSettings({ business }: BusinessSettingsProps) {
 
       {/* Business Slug */}
       <div>
-        <label htmlFor="slug" className="form-label flex items-center gap-2">
-          <LinkIcon className="w-4 h-4" />
-          כתובת האתר שלך (Slug) *
+        <label htmlFor="slug" className="form-label">
+          <span className="flex items-center gap-2">
+            <LinkIcon className="w-4 h-4" />
+            כתובת האתר שלך (Slug) *
+          </span>
         </label>
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
