@@ -130,11 +130,11 @@ function ServiceCard({
           <span>{service.durationMin} דקות</span>
         </div>
         
-        {service.priceCents > 0 ? (
+        {(service.priceCents || 0) > 0 ? (
           <div className="flex items-center gap-1 font-medium text-primary-600">
-            <span>{formatPrice(service.priceCents, currency)}</span>
+            <span>{formatPrice(service.priceCents || 0, currency)}</span>
           </div>
-        ) : service.priceCents === 0 ? (
+        ) : (service.priceCents || 0) === 0 ? (
           <div className="flex items-center gap-1 font-medium text-green-600">
             <span>חינם</span>
           </div>
