@@ -13,11 +13,15 @@ import {
   XCircle,
   Shield,
   MessageSquare,
+  Calendar,
 } from 'lucide-react';
+import { EditUserModal } from './EditUserModal';
+import { toast } from 'react-hot-toast';
 
 type UserWithBusinesses = User & {
   ownedBusinesses: (Business & {
     subscription: (Subscription & { package: Package }) | null;
+    appointments: { id: string }[];
   })[];
 };
 
@@ -33,7 +37,7 @@ export function AdminDashboard({ users: initialUsers, systemSettings: initialSet
   const [systemSettings, setSystemSettings] = useState(initialSettings);
   const [sendingTest, setSendingTest] = useState(false);
   const [testPhone, setTestPhone] = useState('');
-  const [changingPackage, setChangingPackage] = useState<string | null>(null);
+  const [editingUser, setEditingUser] = useState<UserWithBusinesses | null>(null);
 
   // Filter users
   const filteredUsers = users.filter(
@@ -42,8 +46,16 @@ export function AdminDashboard({ users: initialUsers, systemSettings: initialSet
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm('האם אתה בטוח שברצונך למחוק משתמש זה? פעולה זו בלתי הפיכה!')) {
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    // אזהרה ראשונה
+    if (!confirm(`⚠️ האם אתה בטוח שברצונך למחוק את המשתמש "${userName}"?\n\nפעולה זו תמחק גם את כל העסקים, התורים והנתונים המשויכים!`)) {
+      return;
+    }
+
+    // אזהרה שנייה - לוודא שהמשתמש רציני
+    const confirmText = prompt(`אנא הקלד את המילה "מחק" כדי לאשר את המחיקה של ${userName}:`);
+    if (confirmText !== 'מחק') {
+      toast.error('המחיקה בוטלה');
       return;
     }
 
@@ -52,65 +64,16 @@ export function AdminDashboard({ users: initialUsers, systemSettings: initialSet
         method: 'DELETE',
       });
 
-      if (!response.ok) throw new Error('Failed to delete user');
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to delete user');
+      }
 
       setUsers((prev) => prev.filter((u) => u.id !== userId));
-      alert('המשתמש נמחק בהצלחה');
+      toast.success('המשתמש נמחק בהצלחה');
     } catch (error) {
       console.error('Error deleting user:', error);
-      alert('שגיאה במחיקת המשתמש');
-    }
-  };
-
-  const handleToggleSuperAdmin = async (userId: string, currentStatus: boolean, userEmail: string) => {
-    // מניעת הורדת הרשאות מעצמך
-    if (userEmail === 'itadmit@gmail.com' && currentStatus === true) {
-      alert('❌ לא ניתן להוריד הרשאות סופר אדמין מהמשתמש הראשי');
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/admin/users/${userId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isSuperAdmin: !currentStatus }),
-      });
-
-      if (!response.ok) throw new Error('Failed to update user');
-
-      const updatedUser = await response.json();
-      setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, isSuperAdmin: updatedUser.isSuperAdmin } : u))
-      );
-      alert('הרשאות עודכנו בהצלחה');
-    } catch (error) {
-      console.error('Error updating user:', error);
-      alert('שגיאה בעדכון הרשאות');
-    }
-  };
-
-  const handleUpdateSubscription = async (businessId: string, status: string) => {
-    // אישור למעבר מפעיל לניסיון
-    if (status === 'trial') {
-      if (!confirm('האם אתה בטוח שברצונך להעביר את המנוי מפעיל לניסיון? הלקוח יקבל 14 ימי ניסיון חדשים.')) {
-        return;
-      }
-    }
-
-    try {
-      const response = await fetch(`/api/admin/subscriptions/${businessId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
-      });
-
-      if (!response.ok) throw new Error('Failed to update subscription');
-
-      alert('המנוי עודכן בהצלחה');
-      window.location.reload();
-    } catch (error) {
-      console.error('Error updating subscription:', error);
-      alert('שגיאה בעדכון המנוי');
+      toast.error(error instanceof Error ? error.message : 'שגיאה במחיקת המשתמש');
     }
   };
 
@@ -134,11 +97,17 @@ export function AdminDashboard({ users: initialUsers, systemSettings: initialSet
         }
       });
 
-      alert('ההגדרה עודכנה בהצלחה');
+      toast.success('ההגדרה עודכנה בהצלחה');
     } catch (error) {
       console.error('Error updating setting:', error);
-      alert('שגיאה בעדכון ההגדרה');
+      toast.error('שגיאה בעדכון ההגדרה');
     }
+  };
+
+  const handleUserUpdated = (updatedUser: UserWithBusinesses) => {
+    setUsers((prev) =>
+      prev.map((u) => (u.id === updatedUser.id ? updatedUser : u))
+    );
   };
 
   const getRappelsendClientId = () => {
@@ -147,49 +116,6 @@ export function AdminDashboard({ users: initialUsers, systemSettings: initialSet
 
   const getRappelsendApiToken = () => {
     return systemSettings.find((s) => s.key === 'rappelsend_api_token')?.value || '';
-  };
-
-  const handleChangePackage = async (businessId: string) => {
-    const packageCode = prompt('הזן קוד חבילה (starter/professional/premium/enterprise):');
-    if (!packageCode || !['starter', 'professional', 'premium', 'enterprise'].includes(packageCode.toLowerCase())) {
-      alert('קוד חבילה לא תקין');
-      return;
-    }
-
-    setChangingPackage(businessId);
-    try {
-      const response = await fetch(`/api/admin/subscriptions/${businessId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ packageCode: packageCode.toLowerCase() }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to change package');
-      }
-
-      const updatedSubscription = await response.json();
-      
-      // Update the local state
-      setUsers((prev) =>
-        prev.map((u) => ({
-          ...u,
-          ownedBusinesses: u.ownedBusinesses.map((b) =>
-            b.id === businessId
-              ? { ...b, subscription: updatedSubscription }
-              : b
-          ),
-        }))
-      );
-
-      alert('החבילה עודכנה בהצלחה! ✅');
-    } catch (error) {
-      console.error('Error changing package:', error);
-      alert(`שגיאה בשינוי חבילה: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      setChangingPackage(null);
-    }
   };
 
   const handleSendTestMessage = async () => {
@@ -350,10 +276,13 @@ export function AdminDashboard({ users: initialUsers, systemSettings: initialSet
                         עסקים
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                        סטטוס מנוי
+                        חבילה
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                        הרשאות
+                        תורים
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                        התחברות אחרונה
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
                         פעולות
@@ -389,9 +318,12 @@ export function AdminDashboard({ users: initialUsers, systemSettings: initialSet
                         </td>
                         <td className="px-6 py-4">
                           {user.ownedBusinesses[0]?.subscription ? (
-                            <div className="space-y-1">
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {user.ownedBusinesses[0].subscription.package.name}
+                              </div>
                               <span
-                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium mt-1 ${
                                   user.ownedBusinesses[0].subscription.status === 'active'
                                     ? 'bg-green-100 text-green-800'
                                     : user.ownedBusinesses[0].subscription.status === 'trial'
@@ -405,82 +337,55 @@ export function AdminDashboard({ users: initialUsers, systemSettings: initialSet
                                   ? 'ניסיון'
                                   : user.ownedBusinesses[0].subscription.status}
                               </span>
-                              <div className="text-xs text-gray-500">
-                                {user.ownedBusinesses[0].subscription.package.name}
+                            </div>
+                          ) : (
+                            <span className="text-sm text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm font-medium text-gray-900">
+                            {user.ownedBusinesses[0]?.appointments?.length || 0}
+                          </div>
+                          <div className="text-xs text-gray-500">תורים</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          {user.lastLoginAt ? (
+                            <div>
+                              <div className="text-sm text-gray-900">
+                                {new Date(user.lastLoginAt).toLocaleDateString('he-IL')}
                               </div>
-                              <div className="flex flex-wrap gap-2 mt-2">
-                                {user.ownedBusinesses[0].subscription.status === 'trial' && (
-                                  <button
-                                    onClick={() =>
-                                      handleUpdateSubscription(
-                                        user.ownedBusinesses[0].id,
-                                        'active'
-                                      )
-                                    }
-                                    className="text-xs text-green-600 hover:text-green-700 underline"
-                                  >
-                                    העבר לפעיל
-                                  </button>
-                                )}
-                                {user.ownedBusinesses[0].subscription.status === 'active' && (
-                                  <button
-                                    onClick={() =>
-                                      handleUpdateSubscription(
-                                        user.ownedBusinesses[0].id,
-                                        'trial'
-                                      )
-                                    }
-                                    className="text-xs text-blue-600 hover:text-blue-700 underline"
-                                  >
-                                    העבר לניסיון
-                                  </button>
-                                )}
-                                <button
-                                  onClick={() => handleChangePackage(user.ownedBusinesses[0].id)}
-                                  disabled={changingPackage === user.ownedBusinesses[0].id}
-                                  className="text-xs text-purple-600 hover:text-purple-700 underline disabled:opacity-50"
-                                >
-                                  {changingPackage === user.ownedBusinesses[0].id ? 'מעדכן...' : 'שנה חבילה'}
-                                </button>
+                              <div className="text-xs text-gray-500">
+                                {new Date(user.lastLoginAt).toLocaleTimeString('he-IL', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
                               </div>
                             </div>
                           ) : (
-                            <span className="text-sm text-gray-400">אין מנוי</span>
+                            <span className="text-sm text-gray-400">לא התחבר</span>
                           )}
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
                             <button
-                              onClick={() =>
-                                handleToggleSuperAdmin(user.id, user.isSuperAdmin, user.email)
-                              }
-                              className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                                user.isSuperAdmin
-                                  ? 'bg-red-100 text-red-800 hover:bg-red-200'
-                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                              }`}
+                              onClick={() => setEditingUser(user)}
+                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="ערוך משתמש"
                             >
-                              {user.isSuperAdmin ? (
-                                <>
-                                  <Shield className="w-3 h-3" />
-                                  Super Admin
-                                  {user.email === 'itadmit@gmail.com' && ' 🔒'}
-                                </>
-                              ) : (
-                                <>משתמש רגיל</>
-                              )}
+                              <Edit className="w-4 h-4" />
                             </button>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
                             <button
-                              onClick={() => handleDeleteUser(user.id)}
+                              onClick={() => handleDeleteUser(user.id, user.name)}
                               className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                               title="מחק משתמש"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
+                            {user.isSuperAdmin && (
+                              <div className="mr-2">
+                                <Shield className="w-4 h-4 text-red-600" title="Super Admin" />
+                              </div>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -637,6 +542,15 @@ export function AdminDashboard({ users: initialUsers, systemSettings: initialSet
           </div>
         )}
       </div>
+
+      {/* Edit User Modal */}
+      {editingUser && (
+        <EditUserModal
+          user={editingUser}
+          onClose={() => setEditingUser(null)}
+          onSuccess={handleUserUpdated}
+        />
+      )}
     </div>
   );
 }

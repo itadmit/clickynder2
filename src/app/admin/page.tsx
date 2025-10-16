@@ -31,6 +31,11 @@ export default async function AdminPage() {
               package: true,
             },
           },
+          appointments: {
+            select: {
+              id: true,
+            },
+          },
         },
       },
     },

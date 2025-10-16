@@ -2,6 +2,54 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { hash } from 'bcryptjs';
+
+// GET - שליפת משתמש בודד
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // בדיקה שהמשתמש הנוכחי הוא Super Admin
+    const currentUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { isSuperAdmin: true },
+    });
+
+    if (!currentUser?.isSuperAdmin) {
+      return NextResponse.json({ error: 'Forbidden - Super Admin only' }, { status: 403 });
+    }
+
+    const userId = params.id;
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        ownedBusinesses: {
+          include: {
+            subscription: {
+              include: { package: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    return NextResponse.json(user);
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    return NextResponse.json({ error: 'Failed to fetch user' }, { status: 500 });
+  }
+}
 
 // PATCH - עדכון משתמש
 export async function PATCH(
@@ -43,14 +91,22 @@ export async function PATCH(
       }
     }
 
+    // הכנת הנתונים לעדכון
+    const updateData: any = {
+      ...(data.isSuperAdmin !== undefined && { isSuperAdmin: data.isSuperAdmin }),
+      ...(data.name && { name: data.name }),
+      ...(data.email && { email: data.email }),
+      ...(data.phone !== undefined && { phone: data.phone || null }),
+    };
+
+    // אם יש איפוס סיסמה
+    if (data.password) {
+      updateData.passwordHash = await hash(data.password, 12);
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: {
-        ...(data.isSuperAdmin !== undefined && { isSuperAdmin: data.isSuperAdmin }),
-        ...(data.name && { name: data.name }),
-        ...(data.email && { email: data.email }),
-        ...(data.phone && { phone: data.phone }),
-      },
+      data: updateData,
     });
 
     return NextResponse.json(updatedUser);
