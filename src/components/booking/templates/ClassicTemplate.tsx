@@ -157,16 +157,16 @@ export function ClassicTemplate({ business }: ClassicTemplateProps) {
                     <div className="bg-white rounded-lg p-4">
                       <div className="flex items-start justify-between mb-2">
                         <h3 className="font-bold text-gray-900 text-lg">{service.name}</h3>
-                        {service.priceCents > 0 ? (
+                        {(service.priceCents || 0) > 0 ? (
                           <span 
                             className="text-xl font-bold px-4 py-1.5 rounded-full text-white"
                             style={{ 
                               background: `linear-gradient(135deg, ${business.primaryColor || '#3b82f6'}, ${business.secondaryColor || '#d946ef'})`,
                             }}
                           >
-                            ₪{(service.priceCents / 100).toFixed(0)}
+                            ₪{((service.priceCents || 0) / 100).toFixed(0)}
                           </span>
-                        ) : service.priceCents === 0 ? (
+                        ) : (service.priceCents || 0) === 0 ? (
                           <span 
                             className="text-lg font-bold px-4 py-1.5 rounded-full text-white bg-green-500"
                           >

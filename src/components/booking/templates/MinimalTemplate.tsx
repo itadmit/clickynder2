@@ -108,14 +108,14 @@ export function MinimalTemplate({ business }: MinimalTemplateProps) {
                         </div>
                       </div>
                       
-                      {service.priceCents > 0 ? (
+                      {(service.priceCents || 0) > 0 ? (
                         <span 
                           className="text-2xl mr-4"
                           style={{ color: primaryColor, fontWeight: 900 }}
                         >
-                          ₪{(service.priceCents / 100).toFixed(0)}
+                          ₪{((service.priceCents || 0) / 100).toFixed(0)}
                         </span>
-                      ) : service.priceCents === 0 ? (
+                      ) : (service.priceCents || 0) === 0 ? (
                         <span 
                           className="text-xl mr-4"
                           style={{ color: '#10b981', fontWeight: 700 }}
