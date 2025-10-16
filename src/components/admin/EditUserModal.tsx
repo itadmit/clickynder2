@@ -6,12 +6,6 @@ import { X, User as UserIcon, Mail, Phone, Link as LinkIcon, Lock, Building2 } f
 import { toast } from 'react-hot-toast';
 import { UserWithBusinesses } from '@/types/admin';
 
-type UserWithBusinessesExtended = UserWithBusinesses & {
-  ownedBusinesses: (Business & {
-    subscription: (Subscription & { package: Package }) | null;
-  })[];
-};
-
 interface EditUserModalProps {
   user: UserWithBusinesses;
   onClose: () => void;

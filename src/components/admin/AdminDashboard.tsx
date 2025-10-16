@@ -19,13 +19,6 @@ import { EditUserModal } from './EditUserModal';
 import { toast } from 'react-hot-toast';
 import { UserWithBusinesses } from '@/types/admin';
 
-type UserWithBusinessesExtended = UserWithBusinesses & {
-  ownedBusinesses: (Business & {
-    subscription: (Subscription & { package: Package }) | null;
-    appointments: { id: string }[];
-  })[];
-};
-
 interface AdminDashboardProps {
   users: UserWithBusinesses[];
   systemSettings: SystemSettings[];
