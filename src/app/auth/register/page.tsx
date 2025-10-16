@@ -223,9 +223,7 @@ export default function RegisterPage() {
           {/* Logo */}
           <div className="text-center lg:text-right">
             <Link href="/">
-              <h1 className="text-3xl font-bold bg-gradient-to-l from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Clickynder
-              </h1>
+              <img src="/assets/logo.png" alt="Clickynder" className="h-14 mb-4" />
             </Link>
           </div>
 
