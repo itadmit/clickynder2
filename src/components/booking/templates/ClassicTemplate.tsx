@@ -157,7 +157,7 @@ export function ClassicTemplate({ business }: ClassicTemplateProps) {
                     <div className="bg-white rounded-lg p-4">
                       <div className="flex items-start justify-between mb-2">
                         <h3 className="font-bold text-gray-900 text-lg">{service.name}</h3>
-                        {service.priceCents && (
+                        {service.priceCents > 0 ? (
                           <span 
                             className="text-xl font-bold px-4 py-1.5 rounded-full text-white"
                             style={{ 
@@ -166,7 +166,13 @@ export function ClassicTemplate({ business }: ClassicTemplateProps) {
                           >
                             ₪{(service.priceCents / 100).toFixed(0)}
                           </span>
-                        )}
+                        ) : service.priceCents === 0 ? (
+                          <span 
+                            className="text-lg font-bold px-4 py-1.5 rounded-full text-white bg-green-500"
+                          >
+                            חינם
+                          </span>
+                        ) : null}
                       </div>
                       {service.description && (
                         <p className="text-sm text-gray-600 mb-3">{service.description}</p>
