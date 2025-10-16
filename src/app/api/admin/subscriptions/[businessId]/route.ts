@@ -86,7 +86,6 @@ export async function PATCH(
           businessId: business.id,
           packageId: targetPackage.id,
           status: 'trial',
-          startDate: new Date(),
           trialEndDate,
         },
         include: {
