@@ -34,7 +34,10 @@ echo ""
 
 # Step 2: Build Docker Image Locally
 echo -e "${BLUE}🔨 Step 2/6: Building Docker image locally...${NC}"
-docker build --platform linux/amd64 -t ${IMAGE_NAME}:${IMAGE_TAG} .
+# Force use of BuildKit and desktop-linux context for Docker 28.x
+export DOCKER_BUILDKIT=1
+docker context use desktop-linux 2>/dev/null || true
+docker buildx build --platform linux/amd64 --load -t ${IMAGE_NAME}:${IMAGE_TAG} .
 
 if [ $? -ne 0 ]; then
     echo -e "${RED}❌ Build failed!${NC}"
