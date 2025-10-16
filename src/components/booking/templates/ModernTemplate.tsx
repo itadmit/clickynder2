@@ -25,7 +25,7 @@ export function ModernTemplate({ business }: ModernTemplateProps) {
       <div 
         className="min-h-screen relative"
         style={{ 
-          background: `linear-gradient(to bottom right, ${business.backgroundColorStart || '#eff6ff'}, ${business.backgroundColorEnd || '#dbeafe'})`,
+          background: `linear-gradient(to bottom right, ${business.backgroundColorStart || '#dbeafe'}, ${business.backgroundColorEnd || '#faf5ff'})`,
           fontFamily: business.font ? `'${business.font}', 'Noto Sans Hebrew', sans-serif` : "'Noto Sans Hebrew', sans-serif"
         }}
       >

@@ -51,8 +51,8 @@ export function BookingPageDesign({ business }: BookingPageDesignProps) {
     templateStyle: business.templateStyle || 'modern',
     primaryColor: business.primaryColor || '#3b82f6',
     secondaryColor: business.secondaryColor || '#d946ef',
-    backgroundColorStart: business.backgroundColorStart || '#eff6ff',
-    backgroundColorEnd: business.backgroundColorEnd || '#dbeafe',
+    backgroundColorStart: business.backgroundColorStart || '#dbeafe',
+    backgroundColorEnd: business.backgroundColorEnd || '#faf5ff',
     font: business.font || 'Noto Sans Hebrew',
     description: business.description || '',
     showBranches: business.showBranches,
@@ -260,35 +260,95 @@ export function BookingPageDesign({ business }: BookingPageDesignProps) {
                     <div className="h-full overflow-hidden">
                       {formData.templateStyle === 'modern' && (
                         <div 
-                          className="h-full bg-gradient-to-br from-blue-50 to-purple-50 p-3 overflow-y-auto"
-                          style={{ fontFamily: `'${formData.font}', sans-serif` }}
+                          className="h-full flex flex-col"
+                          style={{ 
+                            fontFamily: `'${formData.font}', sans-serif`,
+                            background: `linear-gradient(to bottom right, ${formData.backgroundColorStart}, ${formData.backgroundColorEnd})`
+                          }}
                         >
-                          {/* Modern Preview */}
-                          <div className="bg-white rounded-xl p-3 mb-2 shadow-sm">
+                          {/* Header */}
+                          <div 
+                            className="py-2 px-2 flex items-center justify-center gap-1.5"
+                            style={{
+                              backgroundColor: formData.primaryColor ? `${formData.primaryColor}B3` : '#3b82f6B3'
+                            }}
+                          >
                             {formData.logoUrl && (
-                              <div className="w-10 h-10 mx-auto mb-2 bg-blue-500 rounded-lg p-0.5">
-                                <img src={formData.logoUrl} alt="Logo" className="w-full h-full object-contain bg-white rounded" />
-                              </div>
+                              <img 
+                                src={formData.logoUrl} 
+                                alt="Logo" 
+                                className="w-5 h-5 object-contain rounded bg-white/90 p-0.5"
+                              />
                             )}
-                            <div className="text-[9px] font-bold text-center">{business.name}</div>
-                            {formData.description && (
-                              <div className="text-[7px] text-gray-600 text-center mt-1">{formData.description.slice(0, 30)}...</div>
-                            )}
+                            <div className="text-white text-center">
+                              <div className="text-[10px] font-bold leading-tight">{business.name}</div>
+                              {formData.description && (
+                                <div className="text-[7px] opacity-90">{formData.description.slice(0, 20)}...</div>
+                              )}
+                            </div>
                           </div>
-                          <div className="space-y-1.5">
-                            <div className="bg-white rounded-lg p-2">
-                              <div className="text-[8px] font-bold">שירות 1</div>
-                              <div className="flex justify-between items-center mt-1">
-                                <div className="text-[7px] text-gray-600">30 דק</div>
-                                <div className="text-[8px] font-bold">₪100</div>
+
+                          {/* Progress Steps */}
+                          <div className="flex items-center justify-center gap-1 py-2">
+                            <div className="flex items-center">
+                              <div className="w-6 h-6 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{ backgroundColor: formData.primaryColor }}>1</div>
+                              <div className="w-4 h-0.5" style={{ backgroundColor: `${formData.primaryColor}40` }}></div>
+                            </div>
+                            <div className="flex items-center">
+                              <div className="w-6 h-6 rounded-full flex items-center justify-center text-[8px] font-bold" style={{ backgroundColor: `${formData.primaryColor}20`, color: formData.primaryColor }}>2</div>
+                              <div className="w-4 h-0.5 bg-gray-300"></div>
+                            </div>
+                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-[8px] font-bold bg-gray-200 text-gray-500">3</div>
+                          </div>
+
+                          {/* Title */}
+                          <div className="px-3 py-2">
+                            <div className="text-[12px] font-bold text-center mb-1">בחר שירות</div>
+                            <div className="text-[8px] text-gray-600 text-center">איזה שירות תרצה לקבל?</div>
+                          </div>
+
+                          {/* Content - Skeleton Loaders */}
+                          <div className="flex-1 px-2 overflow-y-auto">
+                            <div className="space-y-1.5 mb-3">
+                              {/* Skeleton 1 */}
+                              <div className="bg-white rounded-lg p-2 shadow-sm">
+                                <div className="h-2.5 rounded" style={{ backgroundColor: `${formData.primaryColor}20`, width: '60%' }}></div>
+                                <div className="flex justify-between items-center mt-1">
+                                  <div className="h-2 rounded" style={{ backgroundColor: `${formData.primaryColor}15`, width: '25%' }}></div>
+                                  <div className="h-2.5 rounded" style={{ backgroundColor: `${formData.primaryColor}30`, width: '20%' }}></div>
+                                </div>
+                              </div>
+                              {/* Skeleton 2 */}
+                              <div className="bg-white rounded-lg p-2 shadow-sm">
+                                <div className="h-2.5 rounded" style={{ backgroundColor: `${formData.primaryColor}20`, width: '55%' }}></div>
+                                <div className="flex justify-between items-center mt-1">
+                                  <div className="h-2 rounded" style={{ backgroundColor: `${formData.primaryColor}15`, width: '25%' }}></div>
+                                  <div className="h-2.5 rounded" style={{ backgroundColor: `${formData.primaryColor}30`, width: '20%' }}></div>
+                                </div>
+                              </div>
+                              {/* Skeleton 3 */}
+                              <div className="bg-white rounded-lg p-2 shadow-sm">
+                                <div className="h-2.5 rounded" style={{ backgroundColor: `${formData.primaryColor}20`, width: '50%' }}></div>
+                                <div className="flex justify-between items-center mt-1">
+                                  <div className="h-2 rounded" style={{ backgroundColor: `${formData.primaryColor}15`, width: '25%' }}></div>
+                                  <div className="h-2.5 rounded" style={{ backgroundColor: `${formData.primaryColor}30`, width: '20%' }}></div>
+                                </div>
                               </div>
                             </div>
-                            <div className="bg-white rounded-lg p-2">
-                              <div className="text-[8px] font-bold">שירות 2</div>
-                              <div className="flex justify-between items-center mt-1">
-                                <div className="text-[7px] text-gray-600">45 דק</div>
-                                <div className="text-[8px] font-bold">₪150</div>
-                              </div>
+
+                            {/* CTA Button */}
+                            <div
+                              className="text-white text-[10px] font-bold py-2 rounded-lg text-center shadow-sm"
+                              style={{ backgroundColor: formData.primaryColor }}
+                            >
+                              המשך
+                            </div>
+                          </div>
+
+                          {/* Footer */}
+                          <div className="py-1 text-center">
+                            <div className="text-[6px] text-gray-600">
+                              מופעל על ידי <span className="font-semibold" style={{ color: formData.primaryColor }}>Clickinder</span>
                             </div>
                           </div>
                         </div>
@@ -296,41 +356,128 @@ export function BookingPageDesign({ business }: BookingPageDesignProps) {
 
                       {formData.templateStyle === 'classic' && (
                         <div 
-                          className="h-full bg-gray-50 overflow-y-auto"
-                          style={{ fontFamily: `'${formData.font}', sans-serif` }}
+                          className="h-full flex flex-col"
+                          style={{ 
+                            fontFamily: `'${formData.font}', sans-serif`,
+                            background: `linear-gradient(to bottom right, ${formData.backgroundColorStart}, ${formData.backgroundColorEnd})`
+                          }}
                         >
-                          {/* Classic Preview */}
-                          <div className="bg-white border-b p-3">
-                            <div className="flex items-center gap-2">
-                              {formData.logoUrl ? (
-                                <img src={formData.logoUrl} alt="Logo" className="w-8 h-8 rounded object-contain bg-gray-50 p-1" />
-                              ) : (
-                                <div className="w-8 h-8 rounded bg-gray-800 text-white flex items-center justify-center text-[10px] font-bold">
-                                  {business.name.charAt(0)}
+                          {/* Logo and Business Name - Centered */}
+                          <div className="bg-white rounded-lg shadow-sm p-3 m-2 text-center">
+                            {formData.logoUrl ? (
+                              <img
+                                src={formData.logoUrl}
+                                alt="Logo"
+                                className="w-8 h-8 rounded-full object-cover mx-auto mb-1 shadow-sm border"
+                                style={{
+                                  boxShadow: `0 2px 10px ${formData.primaryColor}40`,
+                                  borderColor: `${formData.primaryColor}40`
+                                }}
+                              />
+                            ) : (
+                              <div 
+                                className="w-8 h-8 mx-auto mb-1 rounded-full flex items-center justify-center text-white text-[8px] font-bold shadow-sm"
+                                style={{ backgroundColor: formData.primaryColor }}
+                              >
+                                {business.name.charAt(0)}
+                              </div>
+                            )}
+                            <div className="text-[11px] font-bold">{business.name}</div>
+                            {formData.description && (
+                              <div className="text-[7px] text-gray-600 mt-0.5">{formData.description.slice(0, 25)}...</div>
+                            )}
+                          </div>
+
+                          {/* Services Title */}
+                          <div className="px-3 pb-2">
+                            <div className="text-[11px] font-bold text-center">השירותים שלנו</div>
+                          </div>
+
+                          {/* Services - Skeleton Loaders */}
+                          <div className="flex-1 px-2 overflow-y-auto">
+                            <div className="space-y-1.5 mb-3">
+                              {/* Skeleton 1 */}
+                              <div
+                                className="relative rounded-lg p-0.5"
+                                style={{
+                                  background: `linear-gradient(135deg, ${formData.primaryColor}, ${formData.secondaryColor})`,
+                                }}
+                              >
+                                <div className="bg-white rounded-lg p-2">
+                                  <div className="h-2 rounded mb-1" style={{ backgroundColor: `${formData.primaryColor}25`, width: '60%' }}></div>
+                                  <div className="flex justify-between items-center mt-0.5">
+                                    <div className="h-1.5 rounded" style={{ backgroundColor: `${formData.primaryColor}15`, width: '25%' }}></div>
+                                    <div 
+                                      className="h-2.5 w-9 rounded-full"
+                                      style={{ 
+                                        background: `linear-gradient(135deg, ${formData.primaryColor}30, ${formData.secondaryColor}30)`,
+                                      }}
+                                    >
+                                    </div>
+                                  </div>
                                 </div>
-                              )}
-                              <div className="text-[9px] font-bold">{business.name}</div>
-                            </div>
-                          </div>
-                          <div className="p-3 space-y-2">
-                            <div className="border border-gray-200 rounded p-2">
-                              <div className="text-[8px] font-bold mb-1">שירות 1</div>
-                              <div className="flex justify-between">
-                                <div className="text-[7px] text-gray-600">30 דק</div>
-                                <div className="text-[8px] font-bold">₪100</div>
+                              </div>
+
+                              {/* Skeleton 2 */}
+                              <div
+                                className="relative rounded-lg p-0.5"
+                                style={{
+                                  background: `linear-gradient(135deg, ${formData.primaryColor}, ${formData.secondaryColor})`,
+                                }}
+                              >
+                                <div className="bg-white rounded-lg p-2">
+                                  <div className="h-1.5 rounded mb-1" style={{ backgroundColor: `${formData.primaryColor}25`, width: '55%' }}></div>
+                                  <div className="flex justify-between items-center mt-0.5">
+                                    <div className="h-1 rounded" style={{ backgroundColor: `${formData.primaryColor}15`, width: '25%' }}></div>
+                                    <div 
+                                      className="h-2 w-8 rounded-full"
+                                      style={{ 
+                                        background: `linear-gradient(135deg, ${formData.primaryColor}30, ${formData.secondaryColor}30)`,
+                                      }}
+                                    >
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Skeleton 3 */}
+                              <div
+                                className="relative rounded-lg p-0.5"
+                                style={{
+                                  background: `linear-gradient(135deg, ${formData.primaryColor}, ${formData.secondaryColor})`,
+                                }}
+                              >
+                                <div className="bg-white rounded-lg p-2">
+                                  <div className="h-1.5 rounded mb-1" style={{ backgroundColor: `${formData.primaryColor}25`, width: '50%' }}></div>
+                                  <div className="flex justify-between items-center mt-0.5">
+                                    <div className="h-1 rounded" style={{ backgroundColor: `${formData.primaryColor}15`, width: '25%' }}></div>
+                                    <div 
+                                      className="h-2 w-8 rounded-full"
+                                      style={{ 
+                                        background: `linear-gradient(135deg, ${formData.primaryColor}30, ${formData.secondaryColor}30)`,
+                                      }}
+                                    >
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
                             </div>
-                            <div className="border border-gray-200 rounded p-2">
-                              <div className="text-[8px] font-bold mb-1">שירות 2</div>
-                              <div className="flex justify-between">
-                                <div className="text-[7px] text-gray-600">45 דק</div>
-                                <div className="text-[8px] font-bold">₪150</div>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="bg-white border-t p-3 mt-auto">
-                            <div className="bg-gray-900 text-white text-[8px] font-bold py-2 rounded text-center">
+
+                            {/* CTA Button */}
+                            <div
+                              className="text-white text-[9px] font-bold py-2 rounded-lg text-center shadow-sm"
+                              style={{
+                                background: `linear-gradient(135deg, ${formData.primaryColor}, ${formData.secondaryColor})`,
+                              }}
+                            >
                               קביעת תור
+                            </div>
+                          </div>
+
+                          {/* Footer */}
+                          <div className="py-1 text-center">
+                            <div className="text-[6px] text-gray-600">
+                              מופעל על ידי <span className="font-semibold" style={{ color: formData.primaryColor }}>Clickinder</span>
                             </div>
                           </div>
                         </div>
@@ -338,60 +485,225 @@ export function BookingPageDesign({ business }: BookingPageDesignProps) {
 
                       {formData.templateStyle === 'minimal' && (
                         <div 
-                          className="h-full overflow-y-auto bg-gradient-to-b from-[#faf9f6] to-[#f5f1ea]"
-                          style={{ fontFamily: `'${formData.font}', sans-serif` }}
+                          className="h-full flex flex-col"
+                          style={{ 
+                            fontFamily: `'${formData.font}', sans-serif`,
+                            background: `linear-gradient(to bottom right, ${formData.backgroundColorStart}, ${formData.backgroundColorEnd})`
+                          }}
                         >
-                          {/* Spa/Menu Preview */}
-                          <div className="p-3 text-center">
+                          {/* Elegant Header */}
+                          <div className="text-center py-3 px-2">
                             {formData.logoUrl && (
-                              <img src={formData.logoUrl} alt="Logo" className="w-10 h-10 mx-auto mb-1 opacity-90" />
+                              <img
+                                src={formData.logoUrl}
+                                alt="Logo"
+                                className="h-6 w-6 object-contain mx-auto mb-1 opacity-90"
+                              />
                             )}
-                            <div className="h-px w-8 mx-auto mb-1" style={{ backgroundColor: formData.primaryColor }}></div>
-                            <div className="text-[9px] font-black" style={{ color: formData.primaryColor }}>
+                            
+                            {/* Decorative Line */}
+                            <div className="flex items-center justify-center gap-1 mb-1">
+                              <div className="h-px w-3" style={{ backgroundColor: formData.primaryColor }}></div>
+                              <div className="w-1 h-1 rounded-full" style={{ backgroundColor: formData.primaryColor }}></div>
+                              <div className="h-px w-3" style={{ backgroundColor: formData.primaryColor }}></div>
+                            </div>
+
+                            <div 
+                              className="text-[11px] mb-1"
+                              style={{ color: formData.primaryColor, fontWeight: 900 }}
+                            >
                               {business.name}
                             </div>
+                            
                             {formData.description && (
-                              <div className="text-[6px] text-gray-600 font-normal mt-0.5">{formData.description.slice(0, 30)}...</div>
+                              <div className="text-[7px] text-gray-600 font-light italic">{formData.description.slice(0, 25)}...</div>
                             )}
                           </div>
-                          
-                          {/* Menu Card */}
-                          <div className="mx-2 bg-white/80 backdrop-blur-sm rounded-lg shadow-lg p-2">
-                            <div className="text-center mb-2 pb-1.5 border-b" style={{ borderColor: `${formData.primaryColor}30` }}>
-                              <div className="text-[7px] font-black" style={{ color: formData.primaryColor }}>השירותים שלנו</div>
+
+                          {/* Menu-Style Services */}
+                          <div className="flex-1 px-2 pb-2 overflow-y-auto">
+                            <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg border" style={{ borderColor: `${formData.primaryColor}20` }}>
+                              {/* Menu Header */}
+                              <div className="text-center py-2 px-2 border-b" style={{ borderColor: `${formData.primaryColor}30` }}>
+                                <div className="flex items-center justify-center gap-1 mb-1">
+                                  <div className="w-1 h-1" style={{ backgroundColor: formData.primaryColor }}></div>
+                                  <div 
+                                    className="text-[9px]"
+                                    style={{ color: formData.primaryColor, fontWeight: 900 }}
+                                  >
+                                    השירותים שלנו
+                                  </div>
+                                  <div className="w-1 h-1" style={{ backgroundColor: formData.primaryColor }}></div>
+                                </div>
+                              </div>
+
+                              {/* Services List - Skeleton Loaders */}
+                              <div className="p-2 space-y-1.5">
+                                {/* Skeleton 1 */}
+                                <div className="p-1 rounded">
+                                  <div className="flex items-start justify-between mb-0.5">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-1 mb-0.5">
+                                        <div className="h-2 rounded" style={{ backgroundColor: `${formData.primaryColor}30`, width: '50%' }}></div>
+                                        <div className="flex-1 border-b border-dotted" style={{ borderColor: `${formData.primaryColor}20` }}></div>
+                                      </div>
+                                    </div>
+                                    <div 
+                                      className="h-2 w-7 rounded mr-1"
+                                      style={{ backgroundColor: `${formData.primaryColor}30` }}
+                                    >
+                                    </div>
+                                  </div>
+                                  <div className="h-1 rounded mb-0.5" style={{ backgroundColor: `${formData.primaryColor}15`, width: '70%' }}></div>
+                                  <div className="h-1 rounded" style={{ backgroundColor: `${formData.secondaryColor}25`, width: '30%' }}></div>
+                                </div>
+                                
+                                <div className="h-px border-b" style={{ borderColor: `${formData.primaryColor}10` }}></div>
+                                
+                                {/* Skeleton 2 */}
+                                <div className="p-1 rounded">
+                                  <div className="flex items-start justify-between mb-0.5">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-1 mb-0.5">
+                                        <div className="h-1.5 rounded" style={{ backgroundColor: `${formData.primaryColor}30`, width: '55%' }}></div>
+                                        <div className="flex-1 border-b border-dotted" style={{ borderColor: `${formData.primaryColor}20` }}></div>
+                                      </div>
+                                    </div>
+                                    <div 
+                                      className="h-1.5 w-6 rounded mr-1"
+                                      style={{ backgroundColor: `${formData.primaryColor}30` }}
+                                    >
+                                    </div>
+                                  </div>
+                                  <div className="h-0.5 rounded mb-0.5" style={{ backgroundColor: `${formData.primaryColor}15`, width: '65%' }}></div>
+                                  <div className="h-0.5 rounded" style={{ backgroundColor: `${formData.secondaryColor}25`, width: '35%' }}></div>
+                                </div>
+
+                                <div className="h-px border-b" style={{ borderColor: `${formData.primaryColor}10` }}></div>
+                                
+                                {/* Skeleton 3 */}
+                                <div className="p-1 rounded">
+                                  <div className="flex items-start justify-between mb-0.5">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-1 mb-0.5">
+                                        <div className="h-1.5 rounded" style={{ backgroundColor: `${formData.primaryColor}30`, width: '48%' }}></div>
+                                        <div className="flex-1 border-b border-dotted" style={{ borderColor: `${formData.primaryColor}20` }}></div>
+                                      </div>
+                                    </div>
+                                    <div 
+                                      className="h-1.5 w-6 rounded mr-1"
+                                      style={{ backgroundColor: `${formData.primaryColor}30` }}
+                                    >
+                                    </div>
+                                  </div>
+                                  <div className="h-0.5 rounded mb-0.5" style={{ backgroundColor: `${formData.primaryColor}15`, width: '60%' }}></div>
+                                  <div className="h-0.5 rounded" style={{ backgroundColor: `${formData.secondaryColor}25`, width: '32%' }}></div>
+                                </div>
+
+                                <div className="h-px border-b" style={{ borderColor: `${formData.primaryColor}10` }}></div>
+                                
+                                {/* Skeleton 4 */}
+                                <div className="p-1 rounded">
+                                  <div className="flex items-start justify-between mb-0.5">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-1 mb-0.5">
+                                        <div className="h-1.5 rounded" style={{ backgroundColor: `${formData.primaryColor}30`, width: '52%' }}></div>
+                                        <div className="flex-1 border-b border-dotted" style={{ borderColor: `${formData.primaryColor}20` }}></div>
+                                      </div>
+                                    </div>
+                                    <div 
+                                      className="h-1.5 w-6 rounded mr-1"
+                                      style={{ backgroundColor: `${formData.primaryColor}30` }}
+                                    >
+                                    </div>
+                                  </div>
+                                  <div className="h-0.5 rounded mb-0.5" style={{ backgroundColor: `${formData.primaryColor}15`, width: '68%' }}></div>
+                                  <div className="h-0.5 rounded" style={{ backgroundColor: `${formData.secondaryColor}25`, width: '28%' }}></div>
+                                </div>
+
+                                <div className="h-px border-b" style={{ borderColor: `${formData.primaryColor}10` }}></div>
+                                
+                                {/* Skeleton 5 */}
+                                <div className="p-1 rounded">
+                                  <div className="flex items-start justify-between mb-0.5">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-1 mb-0.5">
+                                        <div className="h-1.5 rounded" style={{ backgroundColor: `${formData.primaryColor}30`, width: '46%' }}></div>
+                                        <div className="flex-1 border-b border-dotted" style={{ borderColor: `${formData.primaryColor}20` }}></div>
+                                      </div>
+                                    </div>
+                                    <div 
+                                      className="h-1.5 w-6 rounded mr-1"
+                                      style={{ backgroundColor: `${formData.primaryColor}30` }}
+                                    >
+                                    </div>
+                                  </div>
+                                  <div className="h-0.5 rounded mb-0.5" style={{ backgroundColor: `${formData.primaryColor}15`, width: '62%' }}></div>
+                                  <div className="h-0.5 rounded" style={{ backgroundColor: `${formData.secondaryColor}25`, width: '36%' }}></div>
+                                </div>
+
+                                <div className="h-px border-b" style={{ borderColor: `${formData.primaryColor}10` }}></div>
+                                
+                                {/* Skeleton 6 */}
+                                <div className="p-1 rounded">
+                                  <div className="flex items-start justify-between mb-0.5">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-1 mb-0.5">
+                                        <div className="h-1.5 rounded" style={{ backgroundColor: `${formData.primaryColor}30`, width: '54%' }}></div>
+                                        <div className="flex-1 border-b border-dotted" style={{ borderColor: `${formData.primaryColor}20` }}></div>
+                                      </div>
+                                    </div>
+                                    <div 
+                                      className="h-1.5 w-6 rounded mr-1"
+                                      style={{ backgroundColor: `${formData.primaryColor}30` }}
+                                    >
+                                    </div>
+                                  </div>
+                                  <div className="h-0.5 rounded mb-0.5" style={{ backgroundColor: `${formData.primaryColor}15`, width: '66%' }}></div>
+                                  <div className="h-0.5 rounded" style={{ backgroundColor: `${formData.secondaryColor}25`, width: '33%' }}></div>
+                                </div>
+                              </div>
+
+                              {/* CTA Button */}
+                              <div className="p-2 border-t" style={{ borderColor: `${formData.primaryColor}30` }}>
+                                <div
+                                  className="text-white text-[8px] font-semibold py-2 rounded-lg text-center shadow-md"
+                                  style={{
+                                    background: `linear-gradient(135deg, ${formData.primaryColor}, ${formData.secondaryColor})`
+                                  }}
+                                >
+                                  לקביעת תור
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Contact Info */}
+                          <div className="text-center pt-3 pb-2">
+                            <div className="flex items-center justify-center gap-1 mb-2">
+                              <div className="h-px w-3" style={{ backgroundColor: formData.primaryColor }}></div>
+                              <div className="w-1 h-1 rounded-full" style={{ backgroundColor: formData.primaryColor }}></div>
+                              <div className="h-px w-3" style={{ backgroundColor: formData.primaryColor }}></div>
                             </div>
                             
-                            {/* Menu Items */}
-                            <div className="space-y-1.5">
-                              <div className="p-1.5 hover:bg-gray-50 rounded">
-                                <div className="flex justify-between items-start mb-0.5">
-                                  <div className="text-[7px] font-black" style={{ color: formData.primaryColor }}>שירות 1</div>
-                                  <div className="text-[7px] font-black mr-1" style={{ color: formData.primaryColor }}>₪100</div>
+                            <div className="flex items-center justify-center gap-3 text-[7px] mb-2">
+                              {business.phone && (
+                                <div className="flex items-center gap-0.5" style={{ color: formData.primaryColor }}>
+                                  <span className="font-light">{business.phone}</span>
                                 </div>
-                                <div className="text-[5px] text-gray-600 font-normal">טיפול מרגיע</div>
-                                <div className="text-[5px] font-normal" style={{ color: formData.secondaryColor }}>30 דקות</div>
-                                <div className="h-px mt-1 border-b border-dotted" style={{ borderColor: `${formData.primaryColor}20` }}></div>
-                              </div>
-                              
-                              <div className="p-1.5 hover:bg-gray-50 rounded">
-                                <div className="flex justify-between items-start mb-0.5">
-                                  <div className="text-[7px] font-black" style={{ color: formData.primaryColor }}>שירות 2</div>
-                                  <div className="text-[7px] font-black mr-1" style={{ color: formData.primaryColor }}>₪150</div>
+                              )}
+                              {business.email && (
+                                <div className="flex items-center gap-0.5" style={{ color: formData.primaryColor }}>
+                                  <span className="font-light">דוא"ל</span>
                                 </div>
-                                <div className="text-[5px] text-gray-600 font-normal">טיפול מפנק</div>
-                                <div className="text-[5px] font-normal" style={{ color: formData.secondaryColor }}>45 דקות</div>
-                              </div>
+                              )}
                             </div>
-                            
-                            <div className="text-center mt-2 pt-1.5 border-t" style={{ borderColor: `${formData.primaryColor}30` }}>
-                              <div 
-                                className="text-white text-[6px] py-1 rounded-full font-light"
-                                style={{
-                                  background: `linear-gradient(135deg, ${formData.primaryColor}, ${formData.secondaryColor})`
-                                }}
-                              >
-                                לקביעת תור
-                              </div>
+                          </div>
+
+                          {/* Footer */}
+                          <div className="text-center pb-2">
+                            <div className="text-[5px] text-gray-400 font-light">
+                              מופעל על ידי <span style={{ color: formData.primaryColor }}>Clickinder</span>
                             </div>
                           </div>
                         </div>

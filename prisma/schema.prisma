@@ -51,8 +51,8 @@ model Business {
   templateStyle         String    @default("modern") @map("template_style") // modern, classic, minimal
   primaryColor          String?   @map("primary_color") @default("#3b82f6")
   secondaryColor        String?   @map("secondary_color") @default("#d946ef")
-  backgroundColorStart  String?   @map("background_color_start") @default("#eff6ff")
-  backgroundColorEnd    String?   @map("background_color_end") @default("#dbeafe")
+  backgroundColorStart  String?   @map("background_color_start") @default("#dbeafe")
+  backgroundColorEnd    String?   @map("background_color_end") @default("#faf5ff")
   font                  String    @default("Noto Sans Hebrew")
   
   // הגדרות

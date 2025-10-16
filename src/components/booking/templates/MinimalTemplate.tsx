@@ -34,7 +34,7 @@ export function MinimalTemplate({ business }: MinimalTemplateProps) {
         className="min-h-screen"
         style={{ 
           fontFamily: business.font ? `'${business.font}', 'Noto Sans Hebrew', sans-serif` : "'Noto Sans Hebrew', sans-serif",
-          background: `linear-gradient(to bottom right, ${business.backgroundColorStart || '#eff6ff'}, ${business.backgroundColorEnd || '#dbeafe'})`,
+          background: `linear-gradient(to bottom right, ${business.backgroundColorStart || '#dbeafe'}, ${business.backgroundColorEnd || '#faf5ff'})`,
         }}
       >
         {/* Elegant Header */}
