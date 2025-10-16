@@ -243,12 +243,16 @@ export function EditUserModal({ user, onClose, onSuccess }: EditUserModalProps) 
             <button
               type="button"
               onClick={onClose}
-              className="btn-secondary flex-1"
+              className="btn-secondary flex-1 py-3 text-base font-medium"
               disabled={isSubmitting}
             >
               ביטול
             </button>
-            <button type="submit" className="btn-primary flex-1" disabled={isSubmitting}>
+            <button 
+              type="submit" 
+              className="btn-primary flex-1 py-3 text-base font-medium" 
+              disabled={isSubmitting}
+            >
               {isSubmitting ? 'שומר...' : 'שמור שינויים'}
             </button>
           </div>
