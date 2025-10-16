@@ -63,6 +63,7 @@ export async function PATCH(
       'currency',
       'primaryColor',
       'secondaryColor',
+      'backgroundColor',
       'showBranches',
       'showStaff',
       'onlinePaymentEnabled',

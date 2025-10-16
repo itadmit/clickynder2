@@ -51,6 +51,7 @@ export function BookingPageDesign({ business }: BookingPageDesignProps) {
     templateStyle: business.templateStyle || 'modern',
     primaryColor: business.primaryColor || '#0ea5e9',
     secondaryColor: business.secondaryColor || '#d946ef',
+    backgroundColor: business.backgroundColor || '#ffffff',
     font: business.font || 'Noto Sans Hebrew',
     description: business.description || '',
     showBranches: business.showBranches,
@@ -474,24 +475,49 @@ export function BookingPageDesign({ business }: BookingPageDesignProps) {
             </div>
           </div>
 
-          {/* Secondary Color */}
+          {/* Secondary Color - Only for Classic template */}
+          {formData.templateStyle === 'classic' && (
+            <div>
+              <label htmlFor="secondaryColor" className="form-label">
+                צבע משני (Gradient)
+              </label>
+              <div className="flex gap-3">
+                <input
+                  type="color"
+                  value={formData.secondaryColor}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, secondaryColor: e.target.value }))}
+                  className="w-20 h-12 rounded-lg border border-gray-300 cursor-pointer"
+                />
+                <input
+                  type="text"
+                  value={formData.secondaryColor}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, secondaryColor: e.target.value }))}
+                  className="form-input flex-1"
+                  placeholder="#d946ef"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">צבע שני ליצירת gradient בתבנית מודרני</p>
+            </div>
+          )}
+
+          {/* Background Color */}
           <div>
-            <label htmlFor="secondaryColor" className="form-label">
-              צבע משני
+            <label htmlFor="backgroundColor" className="form-label">
+              צבע רקע
             </label>
             <div className="flex gap-3">
               <input
                 type="color"
-                value={formData.secondaryColor}
-                onChange={(e) => setFormData((prev) => ({ ...prev, secondaryColor: e.target.value }))}
+                value={formData.backgroundColor}
+                onChange={(e) => setFormData((prev) => ({ ...prev, backgroundColor: e.target.value }))}
                 className="w-20 h-12 rounded-lg border border-gray-300 cursor-pointer"
               />
               <input
                 type="text"
-                value={formData.secondaryColor}
-                onChange={(e) => setFormData((prev) => ({ ...prev, secondaryColor: e.target.value }))}
+                value={formData.backgroundColor}
+                onChange={(e) => setFormData((prev) => ({ ...prev, backgroundColor: e.target.value }))}
                 className="form-input flex-1"
-                placeholder="#d946ef"
+                placeholder="#ffffff"
               />
             </div>
           </div>
