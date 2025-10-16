@@ -1,285 +1,225 @@
-# 🚀 Clickynder Deployment Guide
+# 🚀 מדריך פריסה - Clickynder
 
-## תהליך הפיתוח והפריסה
+## סקריפטים זמינים
 
-### 🔧 פיתוח מקומי
-
+### 🔥 פריסה מלאה (מומלץ)
 ```bash
-# 1. התקנת תלויות (רק בפעם הראשונה)
-npm install
+./deploy-full.sh
+```
 
-# 2. הרצת שרת פיתוח
-npm run dev
+**מה זה עושה:**
+1. Git commit & push (אופציונלי)
+2. Prisma generate
+3. Database migrations לפרודקשן
+4. Docker build
+5. Upload image לשרת
+6. Deploy + restart services (app + worker)
 
-# 3. פתח בדפדפן
-open http://localhost:3000
+**זמן משוער:** 3-5 דקות
+
+---
+
+### 💻 פיתוח מקומי
+```bash
+./dev.sh
+```
+
+**מה זה עושה:**
+- הורג תהליך קיים על port 3000
+- מפעיל `npm run dev`
+
+---
+
+## תהליך פריסה רגיל
+
+### שלב 1: פיתוח מקומי
+```bash
+# התחל שרת פיתוח
+./dev.sh
+
+# עבוד על הקוד...
+# בדוק ב-http://localhost:3000
+```
+
+### שלב 2: פריסה לייצור
+```bash
+# הרץ את הסקריפט המלא
+./deploy-full.sh
+
+# הזן commit message כשמתבקש
+# או לחץ Enter לדלג על git commit
+```
+
+### שלב 3: בדיקה
+```bash
+# בדוק את האתר
+open https://clickynder.com
+
+# צפה בלוגים
+ssh contabo 'sudo docker logs clickynder_app -f'
+ssh contabo 'sudo docker logs clickynder_worker -f'
 ```
 
 ---
 
-## 🌐 פריסה לשרת Production
+## פקודות שימושיות
 
-יש לך **3 אפשרויות** לפריסה:
-
-### אפשרות 1: Local Build + Git (מומלץ ביותר!) 🚀
-**מתי להשתמש:** תהליך עבודה רגיל - בנייה מקומית מהירה!
-
-**מה קורה:**
-1. ✅ בנייה **במחשב שלך** (מהיר! 1-2 דקות)
-2. ✅ Push ל-GitHub (גיבוי אוטומטי)
-3. ✅ העלאת Docker image מוכן לשרת
-4. ✅ השרת רק מריץ (ללא build!)
-
-**איך לעשות:**
+### צפייה בלוגים
 ```bash
-./deploy-local-build.sh
+# לוגים של האפליקציה
+ssh contabo 'sudo docker logs clickynder_app -f'
+
+# לוגים של ה-Worker (תזכורות)
+ssh contabo 'sudo docker logs clickynder_worker -f'
+
+# כל הלוגים ביחד
+ssh contabo 'cd ~/app && sudo docker-compose -f docker-compose.prod.yml logs -f'
 ```
 
-**יתרונות:**
-- ✅ **מהיר מאוד** - בנייה במחשב החזק שלך
-- ✅ גיבוי אוטומטי ב-GitHub
-- ✅ השרת לא צריך לבנות (חוסך זמן ומשאבים)
-- ✅ היסטוריה מלאה של שינויים
-
-**זמן:** ~3-5 דקות (רוב הזמן = העלאה)
-
----
-
-### אפשרות 2: Git Deploy 🌟
-**מתי להשתמש:** תהליך עבודה רגיל עם Git
-
-**מה קורה:**
-1. ✅ Push ל-GitHub
-2. ✅ Pull בשרת
-3. ✅ בנייה והרצה בשרת
-
-**איך לעשות:**
+### הפעלה מחדש
 ```bash
-./deploy-git.sh
+# הפעלה מחדש של כל השירותים
+ssh contabo 'cd ~/app && sudo docker-compose -f docker-compose.prod.yml restart'
+
+# רק האפליקציה
+ssh contabo 'sudo docker restart clickynder_app'
+
+# רק ה-Worker
+ssh contabo 'sudo docker restart clickynder_worker'
 ```
-
-**יתרונות:**
-- ✅ גיבוי אוטומטי ב-GitHub
-- ✅ היסטוריה מלאה של שינויים
-- ✅ קל לחזור לגרסה קודמת
-
-**זמן:** ~2-4 דקות
-
----
-
-### אפשרות 2: Deploy מקומי ⚡
-**מתי להשתמש:** בנייה מהירה על המחשב החזק שלך
-
-**מה קורה:**
-1. ✅ בנייה מקומית של Docker image (מהירה!)
-2. ✅ דחיסה והעלאה לשרת
-3. ✅ הרצה אוטומטית
-
-**איך לעשות:**
-```bash
-./deploy.sh
-```
-
-**זמן:** ~3-5 דקות (תלוי במהירות האינטרנט)
-
----
-
-### אפשרות 3: Quick Deploy 🏃
-**מתי להשתמש:** תיקוני באגים קטנים, שינויי CSS, עדכון טקסטים
-
-**מה קורה:**
-1. ✅ העלאת רק הקבצים ששונו
-2. ✅ בנייה מחדש בשרת
-3. ✅ restart אוטומטי
-
-**איך לעשות:**
-```bash
-./deploy-quick.sh
-```
-
-**זמן:** ~30 שניות - 2 דקות
-
----
-
-## 📋 תהליך עבודה מומלץ
-
-### תסריט יומיומי:
-
-```bash
-# בוקר - התחלת עבודה
-npm run dev
-
-# פיתוח פיתוח פיתוח... ☕
-
-# סיימת פיצ'ר? בדוק מקומית
-npm run build  # ודא שהכל עובד
-
-# פרוס לשרת
-./deploy.sh
-
-# או אם זה שינוי קטן:
-./deploy-quick.sh
-```
-
----
-
-## 🔍 פקודות שימושיות
 
 ### בדיקת סטטוס
 ```bash
-# בדוק שהאפליקציה רצה
-ssh contabo "sudo docker ps"
+# סטטוס כל השירותים
+ssh contabo 'cd ~/app && sudo docker-compose -f docker-compose.prod.yml ps'
 
-# צפה בלוגים בזמן אמת
-ssh contabo "sudo docker logs clickynder_app -f"
-
-# בדוק שהאתר מגיב
-curl -I https://clickynder.com
+# שימוש במשאבים
+ssh contabo 'sudo docker stats'
 ```
 
-### ניהול מסד נתונים
+### מיגרציות מסד נתונים
 ```bash
-# הרץ migration חדש
-ssh contabo "cd /home/clickynder/app && sudo docker exec clickynder_app npx prisma migrate deploy"
+# יצירת מיגרציה חדשה (מקומי)
+npx prisma migrate dev --name my_migration_name
 
-# פתח Prisma Studio (מרחוק)
-ssh -L 5555:localhost:5555 contabo "cd /home/clickynder/app && sudo docker exec -it clickynder_app npx prisma studio"
-# עכשיו פתח: http://localhost:5555
-```
-
-### Restart מהיר
-```bash
-# רק restart (ללא build)
-ssh contabo "cd /home/clickynder/app && sudo docker compose -f docker-compose.prod.yml restart app"
-
-# עצור הכל
-ssh contabo "cd /home/clickynder/app && sudo docker compose -f docker-compose.prod.yml down"
-
-# הפעל מחדש הכל
-ssh contabo "cd /home/clickynder/app && sudo docker compose -f docker-compose.prod.yml up -d"
+# הרצה בפרודקשן (אוטומטי ב-deploy-full.sh)
+DATABASE_URL="postgresql://clickinder:clickinder123@clickynder.com:5432/clickinder?schema=public" \
+  npx prisma migrate deploy
 ```
 
 ---
 
-## 🔐 עדכון משתני סביבה
+## מבנה Docker
 
-אם צריך לשנות משתנים ב-`.env.production`:
+המערכת רצה ב-3 containers:
 
+1. **clickynder_db** - PostgreSQL database
+2. **clickynder_app** - Next.js application (port 3000)
+3. **clickynder_worker** - Background worker לתזכורות (כל 15 דקות)
+
+כולם מנוהלים על ידי `docker-compose.prod.yml`.
+
+---
+
+## פתרון בעיות
+
+### הבניה נכשלת
 ```bash
-# 1. ערוך מקומית
-nano .env.production
+# נקה Docker cache
+docker system prune -a
 
-# 2. העלה לשרת
-rsync -avz .env.production contabo:/home/clickynder/app/
+# בנה שוב
+./deploy-full.sh
+```
 
-# 3. restart
-ssh contabo "cd /home/clickynder/app && sudo docker compose -f docker-compose.prod.yml restart app"
+### האתר לא עובד
+```bash
+# בדוק לוגים
+ssh contabo 'sudo docker logs clickynder_app --tail 100'
+
+# הפעל מחדש
+ssh contabo 'cd ~/app && sudo docker-compose -f docker-compose.prod.yml restart'
+```
+
+### תזכורות לא נשלחות
+```bash
+# בדוק אם ה-Worker רץ
+ssh contabo 'sudo docker ps | grep worker'
+
+# בדוק לוגים
+ssh contabo 'sudo docker logs clickynder_worker -f'
+
+# הפעל מחדש את ה-Worker
+ssh contabo 'sudo docker restart clickynder_worker'
+```
+
+### בעיות מסד נתונים
+```bash
+# התחבר למסד הנתונים
+ssh contabo 'sudo docker exec -it clickynder_db psql -U clickinder -d clickinder'
+
+# בדוק migrations
+\dt
+
+# צא
+\q
 ```
 
 ---
 
-## 🆘 פתרון בעיות
+## עדכון תלויות
 
-### האתר לא עולה?
 ```bash
-# בדוק שה-containers רצים
-ssh contabo "sudo docker ps"
+# עדכן package.json מקומית
+npm install <package-name>
 
-# צפה בשגיאות
-ssh contabo "sudo docker logs clickynder_app --tail 100"
+# או
+npm update
 
-# restart הכל
-ssh contabo "cd /home/clickynder/app && sudo docker compose -f docker-compose.prod.yml restart"
-```
-
-### בעיות עם מסד נתונים?
-```bash
-# בדוק שהDB רץ
-ssh contabo "sudo docker exec clickynder_db pg_isready -U clickinder"
-
-# התחבר ל-DB
-ssh contabo "sudo docker exec -it clickynder_db psql -U clickinder -d clickinder"
-```
-
-### האתר איטי?
-```bash
-# בדוק שימוש במשאבים
-ssh contabo "sudo docker stats"
-
-# נקה images ישנים
-ssh contabo "sudo docker image prune -a"
+# הרץ פריסה
+./deploy-full.sh
 ```
 
 ---
 
-## 📊 ניטור
+## גיבוי מסד נתונים
 
-### בדיקת health
 ```bash
-# HTTP status
-curl -I https://clickynder.com
+# יצירת גיבוי
+ssh contabo 'sudo docker exec clickynder_db pg_dump -U clickinder clickinder > backup_$(date +%Y%m%d).sql'
 
-# זמן תגובה
-curl -w "\nTime: %{time_total}s\n" -o /dev/null -s https://clickynder.com
-```
-
-### לוגים
-```bash
-# 50 שורות אחרונות
-ssh contabo "sudo docker logs clickynder_app --tail 50"
-
-# follow (real-time)
-ssh contabo "sudo docker logs clickynder_app -f"
-
-# לוגים של היום
-ssh contabo "sudo docker logs clickynder_app --since 24h"
+# שחזור מגיבוי
+ssh contabo 'sudo docker exec -i clickynder_db psql -U clickinder clickinder < backup.sql'
 ```
 
 ---
 
-## 🎯 טיפים
+## סביבת פיתוח vs ייצור
 
-### ✅ לפני deploy תמיד:
-1. `npm run build` - ודא שהבנייה עוברת מקומית
-2. בדוק ב-localhost:3000 שהכל עובד
-3. עשה commit ל-Git (אם משתמש)
-4. רק אז `./deploy.sh`
-
-### ⚡ למהירות מקסימלית:
-- שינויים קטנים: `./deploy-quick.sh`
-- שינויים גדולים או dependencies חדשים: `./deploy.sh`
-
-### 🔒 אבטחה:
-- אל תעלה קבצי `.env` עם סודות ל-Git
-- שמור backup של `.env.production` במקום בטוח
-- עדכן את `NEXTAUTH_SECRET` לסוד אמיתי
+| תכונה | פיתוח (`./dev.sh`) | ייצור (`./deploy-full.sh`) |
+|-------|-------------------|--------------------------|
+| Database | Local PostgreSQL | Remote PostgreSQL |
+| Hot Reload | ✅ כן | ❌ לא |
+| Build | לא צריך | ✅ מלא |
+| Docker | לא | ✅ כן |
+| Worker | לא רץ | ✅ רץ אוטומטית |
 
 ---
 
-## 🔄 Git Workflow (אופציונלי)
+## קבצי תצורה חשובים
 
-אם רוצה להוסיף Git:
-
-```bash
-# אתחול
-git init
-git add .
-git commit -m "Initial commit"
-
-# לינק ל-GitHub
-git remote add origin <YOUR_REPO_URL>
-git push -u origin main
-
-# תהליך עבודה
-git add .
-git commit -m "הוספתי פיצ'ר X"
-git push
-./deploy.sh
-```
+- `docker-compose.prod.yml` - הגדרות Docker לייצור
+- `.env.production` - משתני סביבה לייצור (בשרת)
+- `.env` - משתני סביבה לפיתוח (מקומי)
+- `prisma/schema.prisma` - סכמת מסד הנתונים
+- `worker/reminders-worker.js` - Worker לתזכורות
 
 ---
 
-**זה הכל! עכשיו אתה מוכן לפתח ולפרוס בביטחון! 🚀**
+## תמיכה
 
-אם יש בעיות: `ssh contabo "sudo docker logs clickynder_app -f"`
-
+אם יש בעיה:
+1. בדוק את הלוגים
+2. נסה restart
+3. בדוק את ה-issues ב-GitHub
+4. פנה למפתח
