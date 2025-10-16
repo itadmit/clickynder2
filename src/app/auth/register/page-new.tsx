@@ -7,8 +7,7 @@ import { toast } from 'react-hot-toast';
 import { 
   User, Mail, Phone, Lock, Eye, EyeOff, 
   Building2, MapPin, Link as LinkIcon, 
-  ArrowRight, ArrowLeft, Check,
-  Clock, Calendar, Users, Bell
+  ArrowRight, ArrowLeft, Check 
 } from 'lucide-react';
 import Link from 'next/link';
 import confetti from 'canvas-confetti';
@@ -216,51 +215,41 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex overflow-hidden" dir="rtl">
-      {/* Right Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white overflow-y-auto">
-        <div className="w-full max-w-md space-y-6 animate-fade-in">
-          {/* Logo */}
-          <div className="text-center lg:text-right">
-            <Link href="/">
-              <h1 className="text-3xl font-bold bg-gradient-to-l from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Clickynder
-              </h1>
-            </Link>
-          </div>
-
-          {/* Progress Steps */}
-          <div className="mb-6">
-            <div className="flex items-center justify-center gap-4">
-              {[1, 2].map((s) => (
-                <div key={s} className="flex items-center">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${
-                    s === step 
-                      ? 'bg-blue-600 text-white scale-110' 
-                      : s < step 
-                      ? 'bg-green-500 text-white' 
-                      : 'bg-gray-200 text-gray-500'
-                  }`}>
-                    {s < step ? <Check className="w-6 h-6" /> : s}
-                  </div>
-                  {s < 2 && (
-                    <div className={`w-16 h-1 ${s < step ? 'bg-green-500' : 'bg-gray-200'}`}></div>
-                  )}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4" dir="rtl">
+      <div className="max-w-md w-full">
+        {/* Progress Steps */}
+        <div className="mb-8">
+          <div className="flex items-center justify-center gap-4">
+            {[1, 2].map((s) => (
+              <div key={s} className="flex items-center">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${
+                  s === step 
+                    ? 'bg-blue-600 text-white scale-110' 
+                    : s < step 
+                    ? 'bg-green-500 text-white' 
+                    : 'bg-gray-200 text-gray-500'
+                }`}>
+                  {s < step ? <Check className="w-6 h-6" /> : s}
                 </div>
-              ))}
-            </div>
-            <div className="text-center mt-3">
-              <p className="text-sm text-gray-600">
-                {step === 1 ? 'פרטים אישיים' : 'פרטי העסק'}
-              </p>
-            </div>
+                {s < 2 && (
+                  <div className={`w-16 h-1 ${s < step ? 'bg-green-500' : 'bg-gray-200'}`}></div>
+                )}
+              </div>
+            ))}
           </div>
+          <div className="text-center mt-4">
+            <p className="text-gray-600">
+              {step === 1 ? 'פרטים אישיים' : 'פרטי העסק'}
+            </p>
+          </div>
+        </div>
 
-          {/* Header */}
-          <div className="text-center lg:text-right">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+        {/* Form Card */}
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
               הצטרפות לקליקינדר
-            </h2>
+            </h1>
             <p className="text-gray-600">
               {step === 1 ? 'צור את החשבון שלך' : 'ספר לנו על העסק'}
             </p>
@@ -475,87 +464,6 @@ export default function RegisterPage() {
                 התחבר כאן
               </Link>
             </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Left Side - Slides */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-700 relative overflow-hidden">
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-20 w-72 h-72 bg-white rounded-full blur-3xl animate-blob"></div>
-          <div className="absolute bottom-20 right-20 w-72 h-72 bg-white rounded-full blur-3xl animate-blob animation-delay-2000"></div>
-          <div className="absolute top-1/2 left-1/2 w-72 h-72 bg-white rounded-full blur-3xl animate-blob animation-delay-4000"></div>
-        </div>
-
-        {/* Content */}
-        <div className="relative z-10 flex flex-col items-center justify-center p-12 text-white w-full">
-          <div className="max-w-lg w-full space-y-12">
-            {/* Slide 1: Time Management */}
-            <div className={`space-y-6 transition-all duration-700 ${step === 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 absolute'}`}>
-              <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20 shadow-2xl">
-                <div className="flex items-center justify-center w-16 h-16 bg-white/20 rounded-2xl mb-6">
-                  <Clock className="w-8 h-8" />
-                </div>
-                <h3 className="text-3xl font-bold mb-4">ניהול זמן אוטומטי</h3>
-                <p className="text-blue-100 text-lg leading-relaxed">
-                  כל מה שאתה צריך במקום אחד. מערכת תזמון חכמה שמנהלת את כל התורים שלך בקלות.
-                </p>
-              </div>
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                  <Calendar className="w-6 h-6 mx-auto mb-2" />
-                  <p className="text-sm">לוח שנה חכם</p>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                  <Users className="w-6 h-6 mx-auto mb-2" />
-                  <p className="text-sm">ניהול לקוחות</p>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                  <Bell className="w-6 h-6 mx-auto mb-2" />
-                  <p className="text-sm">תזכורות אוטומטיות</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Slide 2: Business Features */}
-            <div className={`space-y-6 transition-all duration-700 ${step === 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 absolute'}`}>
-              <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20 shadow-2xl">
-                <div className="flex items-center justify-center w-16 h-16 bg-white/20 rounded-2xl mb-6">
-                  <Building2 className="w-8 h-8" />
-                </div>
-                <h3 className="text-3xl font-bold mb-4">העסק שלך באינטרנט</h3>
-                <p className="text-blue-100 text-lg leading-relaxed">
-                  דף הזמנה מותאם אישית, ניהול מלא של עובדים ושירותים, והכל בממשק פשוט ונוח.
-                </p>
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                  <Check className="w-5 h-5 flex-shrink-0" />
-                  <p>דף קביעת תורים מותאם אישית</p>
-                </div>
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                  <Check className="w-5 h-5 flex-shrink-0" />
-                  <p>התראות WhatsApp אוטומטיות</p>
-                </div>
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                  <Check className="w-5 h-5 flex-shrink-0" />
-                  <p>דוחות ותובנות עסקיות</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Dots Indicator */}
-            <div className="flex justify-center gap-2 pt-8">
-              {[1, 2].map((dot) => (
-                <div
-                  key={dot}
-                  className={`h-2 rounded-full transition-all ${
-                    dot === step ? 'w-8 bg-white' : 'w-2 bg-white/40'
-                  }`}
-                />
-              ))}
-            </div>
           </div>
         </div>
       </div>
