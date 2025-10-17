@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { hash } from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { sendEmail } from '@/lib/notifications/email-service';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'שם חייב להכיל לפחות 2 תווים'),
@@ -498,6 +499,169 @@ export async function POST(req: NextRequest) {
       await prisma.notificationTemplate.createMany({
         data: [...whatsappTemplates, ...emailTemplates],
       });
+    }
+
+    // שליחת מייל ברוכים הבאים עם פרטי התחברות
+    try {
+      const dashboardUrl = `${process.env.NEXTAUTH_URL || 'https://clickynder.co.il'}/dashboard`;
+      const bookingUrl = `${process.env.NEXTAUTH_URL || 'https://clickynder.co.il'}/${validatedData.businessSlug}`;
+      const loginUrl = `${process.env.NEXTAUTH_URL || 'https://clickynder.co.il'}/auth/signin`;
+      
+      const welcomeEmailHtml = `<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ברוכים הבאים ל-Clickynder</title>
+</head>
+<body style="font-family: 'Noto Sans Hebrew', 'Segoe UI', Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 0;">
+  <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin-top: 20px; margin-bottom: 20px;">
+    
+    <!-- Header -->
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
+      <h1 style="color: white; margin: 0; font-size: 32px; font-weight: bold;">🎉 ברוכים הבאים!</h1>
+      <p style="color: rgba(255,255,255,0.95); margin: 10px 0 0 0; font-size: 18px;">החשבון שלך נוצר בהצלחה</p>
+    </div>
+
+    <!-- Content -->
+    <div style="padding: 40px 30px;">
+      <p style="font-size: 18px; color: #333; margin-top: 0;">שלום <strong>${validatedData.name}</strong>,</p>
+      <p style="font-size: 16px; color: #666; line-height: 1.7;">תודה שהצטרפת ל-Clickynder! אנחנו שמחים שבחרת בנו לניהול התורים שלך.</p>
+
+      <!-- Login Details Box -->
+      <div style="background: linear-gradient(135deg, #f8f9fe 0%, #fff5ff 100%); border-radius: 12px; padding: 25px; margin: 30px 0; border-right: 4px solid #667eea;">
+        <h2 style="color: #667eea; margin-top: 0; font-size: 20px; margin-bottom: 20px;">🔐 פרטי ההתחברות שלך:</h2>
+        <div style="background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px;">
+          <p style="margin: 0; font-size: 14px; color: #666;">אימייל:</p>
+          <p style="margin: 5px 0 0 0; font-size: 16px; color: #333; font-weight: bold;">${validatedData.email}</p>
+        </div>
+        <div style="background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px;">
+          <p style="margin: 0; font-size: 14px; color: #666;">הסיסמה שבחרת:</p>
+          <p style="margin: 5px 0 0 0; font-size: 16px; color: #333; font-weight: bold; font-family: monospace;">${validatedData.password}</p>
+          <p style="margin: 8px 0 0 0; font-size: 12px; color: #999;">💡 שמור את הסיסמה במקום מאובטח</p>
+        </div>
+        <div style="background: white; border-radius: 8px; padding: 15px;">
+          <p style="margin: 0; font-size: 14px; color: #666;">כתובת דף התורים שלך:</p>
+          <p style="margin: 5px 0 0 0; font-size: 16px; color: #667eea; font-weight: bold; word-break: break-all;">${bookingUrl}</p>
+        </div>
+      </div>
+
+      <!-- CTA Button -->
+      <div style="text-align: center; margin: 35px 0;">
+        <a href="${loginUrl}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-size: 18px; font-weight: bold; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
+          🚀 כניסה למערכת
+        </a>
+      </div>
+
+      <!-- Mobile Apps Section -->
+      <div style="background: #f8f9fa; border-radius: 12px; padding: 25px; margin: 30px 0;">
+        <h3 style="color: #333; margin-top: 0; font-size: 18px; text-align: center; margin-bottom: 20px;">📱 הורד את האפליקציה</h3>
+        <p style="color: #666; font-size: 14px; text-align: center; margin-bottom: 20px;">נהל את התורים שלך בקלות מכל מקום</p>
+        
+        <div style="display: table; width: 100%; margin-top: 20px;">
+          <!-- App Store -->
+          <div style="display: table-cell; width: 50%; padding: 0 5px; text-align: center; vertical-align: top;">
+            <a href="https://apps.apple.com/app/clickynder" style="display: inline-block; text-decoration: none;">
+              <div style="background: white; border: 2px solid #e5e7eb; border-radius: 10px; padding: 15px; transition: all 0.3s;">
+                <div style="font-size: 32px; margin-bottom: 8px;">🍎</div>
+                <div style="color: #333; font-size: 14px; font-weight: bold; margin-bottom: 4px;">App Store</div>
+                <div style="color: #666; font-size: 12px;">עבור iPhone</div>
+              </div>
+            </a>
+          </div>
+          
+          <!-- Google Play -->
+          <div style="display: table-cell; width: 50%; padding: 0 5px; text-align: center; vertical-align: top;">
+            <a href="https://play.google.com/store/apps/details?id=com.clickynder" style="display: inline-block; text-decoration: none;">
+              <div style="background: white; border: 2px solid #e5e7eb; border-radius: 10px; padding: 15px; transition: all 0.3s;">
+                <div style="font-size: 32px; margin-bottom: 8px;">🤖</div>
+                <div style="color: #333; font-size: 14px; font-weight: bold; margin-bottom: 4px;">Google Play</div>
+                <div style="color: #666; font-size: 12px;">עבור Android</div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Features List -->
+      <div style="margin: 30px 0;">
+        <h3 style="color: #333; font-size: 18px; margin-bottom: 15px;">✨ מה אפשר לעשות עכשיו?</h3>
+        <ul style="list-style: none; padding: 0; margin: 0;">
+          <li style="padding: 12px 0; border-bottom: 1px solid #f0f0f0;">
+            <span style="color: #667eea; font-size: 18px; margin-left: 10px;">⚙️</span>
+            <span style="color: #666; font-size: 15px;">התאמה אישית של דף התורים</span>
+          </li>
+          <li style="padding: 12px 0; border-bottom: 1px solid #f0f0f0;">
+            <span style="color: #667eea; font-size: 18px; margin-left: 10px;">📋</span>
+            <span style="color: #666; font-size: 15px;">הוספת שירותים ומחירים</span>
+          </li>
+          <li style="padding: 12px 0; border-bottom: 1px solid #f0f0f0;">
+            <span style="color: #667eea; font-size: 18px; margin-left: 10px;">👥</span>
+            <span style="color: #666; font-size: 15px;">ניהול צוות העובדים</span>
+          </li>
+          <li style="padding: 12px 0; border-bottom: 1px solid #f0f0f0;">
+            <span style="color: #667eea; font-size: 18px; margin-left: 10px;">🔔</span>
+            <span style="color: #666; font-size: 15px;">הגדרת תזכורות אוטומטיות</span>
+          </li>
+          <li style="padding: 12px 0;">
+            <span style="color: #667eea; font-size: 18px; margin-left: 10px;">📊</span>
+            <span style="color: #666; font-size: 15px;">מעקב אחר נתונים וסטטיסטיקות</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Support Section -->
+      <div style="background: #fff9e6; border-radius: 10px; padding: 20px; margin: 30px 0; border-right: 3px solid #ffd700;">
+        <h3 style="color: #856404; margin-top: 0; font-size: 16px; margin-bottom: 10px;">💡 צריך עזרה?</h3>
+        <p style="color: #856404; font-size: 14px; margin: 0; line-height: 1.6;">
+          הצוות שלנו כאן לעזור! פנה אלינו בכל שאלה או בעיה והיינו שמחים לסייע.
+        </p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="background: #f8f9fa; padding: 25px 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+      <p style="color: #999; font-size: 13px; margin: 0 0 10px 0;">
+        <strong style="color: #667eea; font-size: 16px;">Clickynder</strong><br/>
+        מערכת ניהול תורים חכמה ופשוטה
+      </p>
+      <p style="color: #999; font-size: 12px; margin: 10px 0 0 0;">
+        הודעה זו נשלחה אוטומטית, אין צורך להשיב
+      </p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+      await sendEmail({
+        to: validatedData.email,
+        subject: '🎉 ברוכים הבאים ל-Clickynder - החשבון שלך מוכן!',
+        body: `שלום ${validatedData.name},
+
+תודה שהצטרפת ל-Clickynder!
+
+פרטי ההתחברות שלך:
+אימייל: ${validatedData.email}
+סיסמה: ${validatedData.password}
+דף התורים שלך: ${bookingUrl}
+
+כניסה למערכת: ${loginUrl}
+
+הורד את האפליקציה:
+🍎 App Store: https://apps.apple.com/app/clickynder
+🤖 Google Play: https://play.google.com/store/apps/details?id=com.clickynder
+
+⚠️ שמור את הסיסמה במקום מאובטח!
+
+בברכה,
+צוות Clickynder`,
+        html: welcomeEmailHtml,
+      });
+
+      console.log('Welcome email sent to:', validatedData.email);
+    } catch (emailError) {
+      // לא נכשיל את הרישום אם המייל נכשל
+      console.error('Failed to send welcome email:', emailError);
     }
 
     return NextResponse.json({
