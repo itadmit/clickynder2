@@ -99,12 +99,12 @@ export async function POST(req: NextRequest) {
 
     // שמירת ההגדרות
     const settingsToSave = [
-      { key: 'smtp_host', value: smtp_host, description: 'SMTP Host (e.g., smtp.gmail.com)' },
-      { key: 'smtp_port', value: smtp_port || '587', description: 'SMTP Port (587 for TLS, 465 for SSL)' },
-      { key: 'smtp_secure', value: smtp_secure === true || smtp_secure === 'true' ? 'true' : 'false', description: 'Use SSL/TLS' },
-      { key: 'smtp_user', value: smtp_user, description: 'SMTP Username (email)' },
-      { key: 'smtp_from_name', value: smtp_from_name || 'Clickynder', description: 'From Name' },
-      { key: 'smtp_from_email', value: smtp_from_email, description: 'From Email Address' },
+      { key: 'smtp_host', value: String(smtp_host), description: 'SMTP Host (e.g., smtp.gmail.com)' },
+      { key: 'smtp_port', value: String(smtp_port || '587'), description: 'SMTP Port (587 for TLS, 465 for SSL)' },
+      { key: 'smtp_secure', value: String(smtp_secure || 'false'), description: 'Use SSL/TLS' },
+      { key: 'smtp_user', value: String(smtp_user), description: 'SMTP Username (email)' },
+      { key: 'smtp_from_name', value: String(smtp_from_name || 'Clickynder'), description: 'From Name' },
+      { key: 'smtp_from_email', value: String(smtp_from_email), description: 'From Email Address' },
     ];
 
     // שמירה של כל הגדרה
