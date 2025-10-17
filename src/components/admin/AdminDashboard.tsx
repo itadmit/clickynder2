@@ -157,11 +157,17 @@ export function AdminDashboard({ users: initialUsers, systemSettings: initialSet
       {/* Header */}
       <div className="bg-red-600 text-white p-6 shadow-lg">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-3">
-            <Shield className="w-8 h-8" />
-            <div>
-              <h1 className="text-3xl font-bold">Super Admin Dashboard</h1>
-              <p className="text-red-100">ניהול מערכת Clickinder</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Shield className="w-8 h-8" />
+              <div>
+                <h1 className="text-3xl font-bold">Super Admin Dashboard</h1>
+                <p className="text-red-100">ניהול מערכת Clickinder</p>
+              </div>
+            </div>
+            <div className="bg-red-700 px-4 py-2 rounded-lg">
+              <p className="text-xs text-red-200">גרסה</p>
+              <p className="text-lg font-bold">v2.1</p>
             </div>
           </div>
         </div>
