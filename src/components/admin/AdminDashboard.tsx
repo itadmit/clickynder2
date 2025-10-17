@@ -167,7 +167,7 @@ export function AdminDashboard({ users: initialUsers, systemSettings: initialSet
             </div>
             <div className="bg-red-700 px-4 py-2 rounded-lg">
               <p className="text-xs text-red-200">גרסה</p>
-              <p className="text-lg font-bold">v2.1</p>
+              <p className="text-lg font-bold">v2.2</p>
             </div>
           </div>
         </div>
