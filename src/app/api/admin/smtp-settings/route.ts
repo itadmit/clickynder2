@@ -15,10 +15,12 @@ import crypto from 'crypto';
 // פונקציה להצפנת סיסמה
 function encryptPassword(password: string): string {
   const algorithm = 'aes-256-cbc';
-  const key = Buffer.from(process.env.ENCRYPTION_KEY || 'default-key-32-characters-long!', 'utf-8').slice(0, 32);
+  // יצירת key באורך 32 bytes בדיוק
+  const keySource = process.env.ENCRYPTION_KEY || 'clickynder-default-encryption-key-2024';
+  const key = crypto.createHash('sha256').update(keySource).digest(); // 32 bytes
   const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv(algorithm, key, iv);
-  let encrypted = cipher.update(password);
+  let encrypted = cipher.update(password, 'utf-8');
   encrypted = Buffer.concat([encrypted, cipher.final()]);
   return iv.toString('hex') + ':' + encrypted.toString('hex');
 }

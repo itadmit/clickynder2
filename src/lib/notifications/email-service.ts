@@ -40,14 +40,16 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 function decryptPassword(encryptedPassword: string): string {
   try {
     const algorithm = 'aes-256-cbc';
-    const key = Buffer.from(process.env.ENCRYPTION_KEY || 'default-key-32-characters-long!', 'utf-8').slice(0, 32);
+    // יצירת key באורך 32 bytes בדיוק (אותו key כמו ב-encryption)
+    const keySource = process.env.ENCRYPTION_KEY || 'clickynder-default-encryption-key-2024';
+    const key = crypto.createHash('sha256').update(keySource).digest(); // 32 bytes
     const parts = encryptedPassword.split(':');
     const iv = Buffer.from(parts.shift()!, 'hex');
     const encryptedText = Buffer.from(parts.join(':'), 'hex');
     const decipher = crypto.createDecipheriv(algorithm, key, iv);
     let decrypted = decipher.update(encryptedText);
     decrypted = Buffer.concat([decrypted, decipher.final()]);
-    return decrypted.toString();
+    return decrypted.toString('utf-8');
   } catch (error) {
     console.error('Error decrypting password:', error);
     return encryptedPassword;
@@ -102,10 +104,16 @@ async function getSMTPConfig(): Promise<SMTPConfig | null> {
       ? decryptPassword(passwordSetting.value)
       : passwordSetting.value;
 
+    const portNum = parseInt(port || '587');
+    // פורט 465 = SSL (secure: true)
+    // פורט 587 = STARTTLS (secure: false, אבל עם requireTLS)
+    // פורט 25 = Plain (secure: false)
+    const isSecure = portNum === 465;
+
     const config: SMTPConfig = {
       host,
-      port: parseInt(port || '587'),
-      secure: settingsMap.get('smtp_secure')?.value === 'true',
+      port: portNum,
+      secure: isSecure,
       user,
       password,
       fromName: settingsMap.get('smtp_from_name')?.value || 'Clickynder',
@@ -140,10 +148,15 @@ async function getTransporter(): Promise<nodemailer.Transporter | null> {
   transporter = nodemailer.createTransport({
     host: config.host,
     port: config.port,
-    secure: config.secure,
+    secure: config.secure, // true עבור 465, false עבור אחר
+    requireTLS: !config.secure, // true עבור 587 (STARTTLS)
     auth: {
       user: config.user,
       pass: config.password,
+    },
+    tls: {
+      // אפשר שגיאות self-signed certificates ב-dev
+      rejectUnauthorized: process.env.NODE_ENV === 'production',
     },
   });
 
