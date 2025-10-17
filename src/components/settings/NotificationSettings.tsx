@@ -18,9 +18,14 @@ export function NotificationSettings({ businessId, templates }: NotificationSett
   const [localTemplates, setLocalTemplates] = useState(templates);
   const [creatingDefaults, setCreatingDefaults] = useState(false);
   const [previewingTemplate, setPreviewingTemplate] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'whatsapp' | 'email'>('whatsapp');
 
-  // רק תבניות WhatsApp
+  // סינון תבניות לפי ערוץ
   const whatsappTemplates = localTemplates.filter((t) => t.channel === 'whatsapp');
+  const emailTemplates = localTemplates.filter((t) => t.channel === 'email');
+  
+  // תבניות מוצגות לפי הטאב הפעיל
+  const displayedTemplates = activeTab === 'whatsapp' ? whatsappTemplates : emailTemplates;
 
   const startEditing = (template: NotificationTemplate) => {
     setEditingTemplate(template.id);
@@ -142,21 +147,74 @@ export function NotificationSettings({ businessId, templates }: NotificationSett
 
   return (
     <div className="space-y-6">
-      {/* Channel Info - WhatsApp Only */}
-      <div className="flex items-center gap-3 p-4 bg-green-50 border-2 border-green-200 rounded-lg">
-        <div className="flex items-center justify-center w-12 h-12 bg-green-500 rounded-full">
-          <MessageSquare className="w-6 h-6 text-white" />
-        </div>
-        <div className="flex-1">
-          <h3 className="font-bold text-green-900">הודעות WhatsApp דרך RappelSend</h3>
-          <p className="text-sm text-green-700">
-            נהל את תבניות ההודעות שנשלחות ללקוחות שלך בוואטסאפ
-          </p>
-        </div>
-        <div className="text-xs text-green-600 bg-green-100 px-3 py-1 rounded-full font-medium">
-          פעיל
+      {/* Tabs */}
+      <div className="border-b border-gray-200">
+        <div className="flex gap-2">
+          <button
+            onClick={() => setActiveTab('whatsapp')}
+            className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${
+              activeTab === 'whatsapp'
+                ? 'border-green-500 text-green-700 bg-green-50'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <MessageSquare className="w-4 h-4" />
+              <span>WhatsApp</span>
+              {whatsappTemplates.some(t => t.active) && (
+                <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
+                  פעיל
+                </span>
+              )}
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('email')}
+            className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${
+              activeTab === 'email'
+                ? 'border-blue-500 text-blue-700 bg-blue-50'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <Mail className="w-4 h-4" />
+              <span>אימייל</span>
+              {emailTemplates.some(t => t.active) && (
+                <span className="bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full">
+                  פעיל
+                </span>
+              )}
+            </div>
+          </button>
         </div>
       </div>
+
+      {/* Channel Info */}
+      {activeTab === 'whatsapp' ? (
+        <div className="flex items-center gap-3 p-4 bg-green-50 border-2 border-green-200 rounded-lg">
+          <div className="flex items-center justify-center w-12 h-12 bg-green-500 rounded-full">
+            <MessageSquare className="w-6 h-6 text-white" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-bold text-green-900">הודעות WhatsApp דרך RappelSend</h3>
+            <p className="text-sm text-green-700">
+              נהל את תבניות ההודעות שנשלחות ללקוחות שלך בוואטסאפ
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center gap-3 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+          <div className="flex items-center justify-center w-12 h-12 bg-blue-500 rounded-full">
+            <Mail className="w-6 h-6 text-white" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-bold text-blue-900">הודעות אימייל דרך SMTP</h3>
+            <p className="text-sm text-blue-700">
+              נהל את תבניות האימייל שנשלחות ללקוחות שלך. שים לב: נדרש הגדרת SMTP בפאנל האדמין
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Templates Info */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -171,15 +229,23 @@ export function NotificationSettings({ businessId, templates }: NotificationSett
       </div>
 
       {/* Template List */}
-      {whatsappTemplates.length === 0 ? (
+      {displayedTemplates.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
           <div className="max-w-md mx-auto bg-white p-8 rounded-xl border-2 border-dashed border-gray-300">
             <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                <MessageSquare className="w-8 h-8 text-green-600" />
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
+                activeTab === 'whatsapp' ? 'bg-green-100' : 'bg-blue-100'
+              }`}>
+                {activeTab === 'whatsapp' ? (
+                  <MessageSquare className="w-8 h-8 text-green-600" />
+                ) : (
+                  <Mail className="w-8 h-8 text-blue-600" />
+                )}
               </div>
             </div>
-            <p className="text-lg font-medium mb-2 text-gray-900">אין תבניות WhatsApp</p>
+            <p className="text-lg font-medium mb-2 text-gray-900">
+              אין תבניות {activeTab === 'whatsapp' ? 'WhatsApp' : 'אימייל'}
+            </p>
             <p className="text-sm mb-6 text-gray-600">
               התבניות נוצרות אוטומטית בעת יצירת חשבון חדש.
               <br />
@@ -189,13 +255,17 @@ export function NotificationSettings({ businessId, templates }: NotificationSett
               <button
                 onClick={createDefaultTemplates}
                 disabled={creatingDefaults}
-                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg"
+                className={`px-6 py-3 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg ${
+                  activeTab === 'whatsapp'
+                    ? 'bg-green-600 hover:bg-green-700'
+                    : 'bg-blue-600 hover:bg-blue-700'
+                }`}
               >
-                {creatingDefaults ? 'יוצר תבניות...' : '🎨 צור 5 תבניות WhatsApp'}
+                {creatingDefaults ? 'יוצר תבניות...' : `🎨 צור תבניות ${activeTab === 'whatsapp' ? 'WhatsApp' : 'אימייל'}`}
               </button>
               {!creatingDefaults && (
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
-                  יצירת 5 תבניות מוכנות לשימוש - ניתן לערוך לאחר מכן
+                  יצירת תבניות מוכנות לשימוש - ניתן לערוך לאחר מכן
                   <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
                 </div>
               )}
@@ -204,7 +274,7 @@ export function NotificationSettings({ businessId, templates }: NotificationSett
         </div>
       ) : (
         <div className="space-y-4">
-          {whatsappTemplates.map((template) => {
+          {displayedTemplates.map((template) => {
             const isEditing = editingTemplate === template.id;
 
             return (
@@ -288,18 +358,35 @@ export function NotificationSettings({ businessId, templates }: NotificationSett
 
                 {isEditing ? (
                   <div className="space-y-4">
-                    {/* Body Field - WhatsApp only */}
+                    {/* Subject Field - Email only */}
+                    {activeTab === 'email' && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          נושא המייל
+                        </label>
+                        <input
+                          type="text"
+                          value={editedSubject}
+                          onChange={(e) => setEditedSubject(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          placeholder="נושא האימייל..."
+                          dir="rtl"
+                        />
+                      </div>
+                    )}
+                    
+                    {/* Body Field */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        תוכן ההודעה
+                        {activeTab === 'email' ? 'תוכן האימייל (HTML)' : 'תוכן ההודעה'}
                       </label>
                       <textarea
                         value={editedBody}
                         onChange={(e) => setEditedBody(e.target.value)}
-                        rows={6}
+                        rows={activeTab === 'email' ? 12 : 6}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono text-sm"
-                        placeholder="כתוב את תוכן ההודעה כאן..."
-                        dir="rtl"
+                        placeholder={activeTab === 'email' ? 'כתוב את תוכן האימייל כאן (HTML)...' : 'כתוב את תוכן ההודעה כאן...'}
+                        dir="ltr"
                       />
                     </div>
 
@@ -390,9 +477,21 @@ export function NotificationSettings({ businessId, templates }: NotificationSett
                   </div>
                 ) : (
                   <div>
+                    {/* Subject (Email only) */}
+                    {activeTab === 'email' && template.subject && (
+                      <div className="mb-4">
+                        <p className="text-xs text-gray-500 mb-1">נושא האימייל:</p>
+                        <p className="text-sm font-semibold bg-blue-50 p-3 rounded border border-blue-200 text-gray-800">
+                          {template.subject}
+                        </p>
+                      </div>
+                    )}
+                    
                     <div>
-                      <p className="text-xs text-gray-500 mb-1">תוכן הודעת WhatsApp:</p>
-                      <p className="text-sm whitespace-pre-wrap bg-gray-50 p-3 rounded border border-gray-200 text-gray-800">
+                      <p className="text-xs text-gray-500 mb-1">
+                        {activeTab === 'email' ? 'תוכן האימייל:' : 'תוכן הודעת WhatsApp:'}
+                      </p>
+                      <p className="text-sm whitespace-pre-wrap bg-gray-50 p-3 rounded border border-gray-200 text-gray-800 font-mono text-xs max-h-60 overflow-y-auto">
                         {template.body}
                       </p>
                     </div>

@@ -309,8 +309,194 @@ export async function POST(req: NextRequest) {
         },
       ];
 
+      // יצירת תבניות Email ברירת מחדל (לא פעילות)
+      const emailTemplates = [
+        {
+          businessId: user.ownedBusinesses[0].id,
+          channel: 'email' as const,
+          event: 'booking_confirmed' as const,
+          subject: 'אישור תור - {business_name}',
+          body: `<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head><meta charset="UTF-8"></head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; margin: 0;">
+  <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
+      <h1 style="color: white; margin: 0; font-size: 28px;">✅ התור אושר בהצלחה!</h1>
+    </div>
+    <div style="padding: 30px;">
+      <p style="font-size: 18px; color: #333;">שלום <strong>{customer_name}</strong>,</p>
+      <p style="font-size: 16px; color: #666; line-height: 1.6;">התור שלך אושר בהצלחה! נשמח לראותך.</p>
+      
+      <div style="background: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0;">
+        <h2 style="color: #667eea; margin-top: 0; font-size: 20px;">פרטי התור:</h2>
+        <p style="margin: 10px 0; font-size: 16px;"><strong>📅 תאריך:</strong> {appointment_date}</p>
+        <p style="margin: 10px 0; font-size: 16px;"><strong>🕒 שעה:</strong> {appointment_time}</p>
+        <p style="margin: 10px 0; font-size: 16px;"><strong>💈 שירות:</strong> {service_name}</p>
+        <p style="margin: 10px 0; font-size: 16px;"><strong>👤 מטפל/ת:</strong> {staff_name}</p>
+        <p style="margin: 10px 0; font-size: 16px;"><strong>📍 סניף:</strong> {branch_name}</p>
+      </div>
+      
+      <p style="font-size: 14px; color: #999; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+        {business_name}<br/>
+        הודעה זו נשלחה אוטומטית, אין צורך להשיב
+      </p>
+    </div>
+  </div>
+</body>
+</html>`,
+          active: false, // לא פעיל כברירת מחדל
+        },
+        {
+          businessId: user.ownedBusinesses[0].id,
+          channel: 'email' as const,
+          event: 'booking_reminder' as const,
+          subject: '🔔 תזכורת לתור מחר - {business_name}',
+          body: `<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head><meta charset="UTF-8"></head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; margin: 0;">
+  <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+    <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 30px; text-align: center;">
+      <h1 style="color: white; margin: 0; font-size: 28px;">🔔 תזכורת לתור</h1>
+    </div>
+    <div style="padding: 30px;">
+      <p style="font-size: 18px; color: #333;">היי <strong>{customer_name}</strong>,</p>
+      <p style="font-size: 16px; color: #666; line-height: 1.6;">רצינו להזכיר לך שיש לך תור מחר!</p>
+      
+      <div style="background: #fff3cd; border-right: 4px solid #ffc107; padding: 20px; margin: 20px 0; border-radius: 4px;">
+        <h2 style="color: #856404; margin-top: 0; font-size: 20px;">פרטי התור:</h2>
+        <p style="margin: 10px 0; font-size: 16px; color: #856404;"><strong>📅 תאריך:</strong> {appointment_date}</p>
+        <p style="margin: 10px 0; font-size: 16px; color: #856404;"><strong>🕒 שעה:</strong> {appointment_time}</p>
+        <p style="margin: 10px 0; font-size: 16px; color: #856404;"><strong>💈 שירות:</strong> {service_name}</p>
+        <p style="margin: 10px 0; font-size: 16px; color: #856404;"><strong>👤 מטפל/ת:</strong> {staff_name}</p>
+      </div>
+      
+      <p style="font-size: 16px; color: #666; text-align: center;">נתראה מחר! 😊</p>
+      
+      <p style="font-size: 14px; color: #999; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+        {business_name}<br/>
+        הודעה זו נשלחה אוטומטית, אין צורך להשיב
+      </p>
+    </div>
+  </div>
+</body>
+</html>`,
+          active: false,
+        },
+        {
+          businessId: user.ownedBusinesses[0].id,
+          channel: 'email' as const,
+          event: 'booking_canceled' as const,
+          subject: 'ביטול תור - {business_name}',
+          body: `<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head><meta charset="UTF-8"></head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; margin: 0;">
+  <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+    <div style="background: linear-gradient(135deg, #868f96 0%, #596164 100%); padding: 30px; text-align: center;">
+      <h1 style="color: white; margin: 0; font-size: 28px;">ביטול תור</h1>
+    </div>
+    <div style="padding: 30px;">
+      <p style="font-size: 18px; color: #333;">שלום <strong>{customer_name}</strong>,</p>
+      <p style="font-size: 16px; color: #666; line-height: 1.6;">התור שלך בוטל בהצלחה.</p>
+      
+      <div style="background: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0;">
+        <h2 style="color: #868f96; margin-top: 0; font-size: 20px;">פרטי התור שבוטל:</h2>
+        <p style="margin: 10px 0; font-size: 16px;"><strong>📅 תאריך:</strong> {appointment_date}</p>
+        <p style="margin: 10px 0; font-size: 16px;"><strong>🕒 שעה:</strong> {appointment_time}</p>
+        <p style="margin: 10px 0; font-size: 16px;"><strong>💈 שירות:</strong> {service_name}</p>
+      </div>
+      
+      <p style="font-size: 16px; color: #666; text-align: center;">אנחנו כאן אם תרצה לקבוע תור חדש 😊</p>
+      
+      <p style="font-size: 14px; color: #999; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+        {business_name}<br/>
+        הודעה זו נשלחה אוטומטית, אין צורך להשיב
+      </p>
+    </div>
+  </div>
+</body>
+</html>`,
+          active: false,
+        },
+        {
+          businessId: user.ownedBusinesses[0].id,
+          channel: 'email' as const,
+          event: 'booking_rescheduled' as const,
+          subject: 'שינוי מועד תור - {business_name}',
+          body: `<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head><meta charset="UTF-8"></head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; margin: 0;">
+  <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+    <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 30px; text-align: center;">
+      <h1 style="color: white; margin: 0; font-size: 28px;">📅 התור עודכן!</h1>
+    </div>
+    <div style="padding: 30px;">
+      <p style="font-size: 18px; color: #333;">שלום <strong>{customer_name}</strong>,</p>
+      <p style="font-size: 16px; color: #666; line-height: 1.6;">התור שלך עודכן בהצלחה למועד חדש.</p>
+      
+      <div style="background: #d1ecf1; border-right: 4px solid #0c5460; padding: 20px; margin: 20px 0; border-radius: 4px;">
+        <h2 style="color: #0c5460; margin-top: 0; font-size: 20px;">המועד החדש:</h2>
+        <p style="margin: 10px 0; font-size: 16px; color: #0c5460;"><strong>📅 תאריך:</strong> {appointment_date}</p>
+        <p style="margin: 10px 0; font-size: 16px; color: #0c5460;"><strong>🕒 שעה:</strong> {appointment_time}</p>
+        <p style="margin: 10px 0; font-size: 16px; color: #0c5460;"><strong>💈 שירות:</strong> {service_name}</p>
+        <p style="margin: 10px 0; font-size: 16px; color: #0c5460;"><strong>👤 מטפל/ת:</strong> {staff_name}</p>
+      </div>
+      
+      <p style="font-size: 16px; color: #666; text-align: center;">נתראה במועד החדש! 🙂</p>
+      
+      <p style="font-size: 14px; color: #999; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+        {business_name}<br/>
+        הודעה זו נשלחה אוטומטית, אין צורך להשיב
+      </p>
+    </div>
+  </div>
+</body>
+</html>`,
+          active: false,
+        },
+        {
+          businessId: user.ownedBusinesses[0].id,
+          channel: 'email' as const,
+          event: 'admin_new_booking' as const,
+          subject: '🔔 תור חדש התקבל - {business_name}',
+          body: `<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head><meta charset="UTF-8"></head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; margin: 0;">
+  <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+    <div style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); padding: 30px; text-align: center;">
+      <h1 style="color: white; margin: 0; font-size: 28px;">🔔 תור חדש!</h1>
+    </div>
+    <div style="padding: 30px;">
+      <p style="font-size: 18px; color: #333;">התקבל תור חדש במערכת:</p>
+      
+      <div style="background: #d4edda; border-right: 4px solid #28a745; padding: 20px; margin: 20px 0; border-radius: 4px;">
+        <h2 style="color: #155724; margin-top: 0; font-size: 20px;">פרטי התור:</h2>
+        <p style="margin: 10px 0; font-size: 16px; color: #155724;"><strong>👤 לקוח:</strong> {customer_name}</p>
+        <p style="margin: 10px 0; font-size: 16px; color: #155724;"><strong>📅 תאריך:</strong> {appointment_date}</p>
+        <p style="margin: 10px 0; font-size: 16px; color: #155724;"><strong>🕒 שעה:</strong> {appointment_time}</p>
+        <p style="margin: 10px 0; font-size: 16px; color: #155724;"><strong>💈 שירות:</strong> {service_name}</p>
+        <p style="margin: 10px 0; font-size: 16px; color: #155724;"><strong>👨‍💼 מטפל/ת:</strong> {staff_name}</p>
+      </div>
+      
+      <p style="font-size: 14px; color: #999; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+        {business_name}<br/>
+        התחבר למערכת לניהול התור
+      </p>
+    </div>
+  </div>
+</body>
+</html>`,
+          active: false,
+        },
+      ];
+
+      // יצירת כל התבניות (WhatsApp + Email)
       await prisma.notificationTemplate.createMany({
-        data: whatsappTemplates,
+        data: [...whatsappTemplates, ...emailTemplates],
       });
     }
 

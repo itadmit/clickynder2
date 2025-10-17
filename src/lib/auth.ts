@@ -118,6 +118,13 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.email = user.email;
         token.name = user.name;
+        
+        // בדיקה אם המשתמש הוא Super Admin
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { isSuperAdmin: true },
+        });
+        token.isSuperAdmin = dbUser?.isSuperAdmin || false;
       }
       
       // אם זו התחברות Google, שמור מידע נוסף
@@ -132,6 +139,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string;
         session.user.email = token.email as string;
         session.user.name = token.name as string;
+        (session.user as any).isSuperAdmin = token.isSuperAdmin || false;
       }
       return session;
     },
