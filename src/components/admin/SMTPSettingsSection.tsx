@@ -8,7 +8,7 @@ export function SMTPSettingsSection() {
   const [settings, setSettings] = useState({
     smtp_host: 'smtp.gmail.com',
     smtp_port: '587',
-    smtp_secure: false,
+    smtp_secure: 'false',
     smtp_user: '',
     smtp_password: '',
     smtp_from_name: 'Clickynder',
@@ -135,7 +135,7 @@ export function SMTPSettingsSection() {
               onChange={(e) => setSettings({ 
                 ...settings, 
                 smtp_port: e.target.value,
-                smtp_secure: e.target.value === '465'
+                smtp_secure: e.target.value === '465' ? 'true' : 'false'
               })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
@@ -152,8 +152,8 @@ export function SMTPSettingsSection() {
             <div className="flex items-center h-[42px] px-4 py-2 border border-gray-300 rounded-lg bg-gray-50">
               <input
                 type="checkbox"
-                checked={settings.smtp_secure}
-                onChange={(e) => setSettings({ ...settings, smtp_secure: e.target.checked })}
+                checked={settings.smtp_secure === 'true'}
+                onChange={(e) => setSettings({ ...settings, smtp_secure: e.target.checked ? 'true' : 'false' })}
                 className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
               />
               <span className="mr-2 text-sm text-gray-700">SSL/TLS</span>
