@@ -138,7 +138,7 @@ export async function POST() {
         {
           businessId,
           channel: 'whatsapp' as const,
-          event: 'appointment_reminder' as const,
+          event: 'booking_reminder' as const,
           subject: 'תזכורת לתור',
           body: 'שלום {{customerName}},\n\nזוהי תזכורת לתור שלך מחר:\n\n📅 תאריך: {{date}}\n🕐 שעה: {{time}}\n✂️ שירות: {{serviceName}}\n\nמצפים לראותך!',
           isActive: true,
@@ -146,7 +146,7 @@ export async function POST() {
         {
           businessId,
           channel: 'whatsapp' as const,
-          event: 'appointment_canceled' as const,
+          event: 'booking_canceled' as const,
           subject: 'ביטול תור',
           body: 'שלום {{customerName}},\n\nהתור שלך בתאריך {{date}} בשעה {{time}} בוטל בהצלחה.\n\nתודה!',
           isActive: true,
@@ -163,7 +163,7 @@ export async function POST() {
         {
           businessId,
           channel: 'email' as const,
-          event: 'appointment_reminder' as const,
+          event: 'booking_reminder' as const,
           subject: 'תזכורת לתור - {{businessName}}',
           body: 'שלום {{customerName}},\n\nזוהי תזכורת לתור שלך מחר:\n\nתאריך: {{date}}\nשעה: {{time}}\nשירות: {{serviceName}}\n\nמצפים לראותך!',
           isActive: false,
@@ -171,7 +171,7 @@ export async function POST() {
         {
           businessId,
           channel: 'email' as const,
-          event: 'appointment_canceled' as const,
+          event: 'booking_canceled' as const,
           subject: 'ביטול תור - {{businessName}}',
           body: 'שלום {{customerName}},\n\nהתור שלך בתאריך {{date}} בשעה {{time}} בוטל בהצלחה.\n\nתודה!',
           isActive: false,
