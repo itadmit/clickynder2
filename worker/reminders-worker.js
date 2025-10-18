@@ -6,9 +6,10 @@
  */
 
 const https = require('https');
+const http = require('http');
 
 const WORKER_INTERVAL = 15 * 60 * 1000; // 15 דקות
-const API_URL = process.env.WORKER_API_URL || 'https://clickynder.com';
+const API_URL = process.env.WORKER_API_URL || 'http://app:3000';
 const CRON_SECRET = process.env.CRON_SECRET_KEY || 'your-secret-key-here';
 
 console.log('🚀 Reminders Worker Started');
@@ -31,7 +32,10 @@ async function sendReminders() {
       },
     };
 
-    const req = https.request(url, options, (res) => {
+    // בחירה בין http ו-https לפי הפרוטוקול
+    const protocol = url.protocol === 'https:' ? https : http;
+    
+    const req = protocol.request(url, options, (res) => {
       let data = '';
 
       res.on('data', (chunk) => {
