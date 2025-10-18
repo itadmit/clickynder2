@@ -130,7 +130,7 @@ export async function POST() {
         {
           businessId,
           channel: 'whatsapp' as const,
-          event: 'appointment_confirmed' as const,
+          event: 'appointment_confirmation' as const,
           subject: 'אישור תור',
           body: 'שלום {{customerName}},\n\nהתור שלך אושר בהצלחה!\n\nפרטי התור:\n📅 תאריך: {{date}}\n🕐 שעה: {{time}}\n✂️ שירות: {{serviceName}}\n👤 מטפל: {{staffName}}\n📍 סניף: {{branchName}}\n\nמצפים לראותך!',
           isActive: true,
@@ -155,7 +155,7 @@ export async function POST() {
         {
           businessId,
           channel: 'email' as const,
-          event: 'appointment_confirmed' as const,
+          event: 'appointment_confirmation' as const,
           subject: 'אישור תור - {{businessName}}',
           body: 'שלום {{customerName}},\n\nהתור שלך אושר בהצלחה!\n\nפרטי התור:\nתאריך: {{date}}\nשעה: {{time}}\nשירות: {{serviceName}}\nמטפל: {{staffName}}\nסניף: {{branchName}}\n\nמצפים לראותך!',
           isActive: false,
