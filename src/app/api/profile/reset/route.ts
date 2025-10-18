@@ -119,9 +119,8 @@ export async function POST() {
           businessId,
           name: 'שירות כללי',
           description: 'שירות בסיסי',
-          duration: 60,
-          price: 100,
-          currency: 'ILS',
+          durationMin: 60,
+          priceCents: 10000, // 100 ILS
         },
       });
 
