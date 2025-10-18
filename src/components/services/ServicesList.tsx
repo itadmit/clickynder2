@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import { Service, ServiceCategory, Staff, ServiceStaff } from '@prisma/client';
-import { Edit, Trash2, Eye, EyeOff, Plus, Scissors } from 'lucide-react';
+import { Edit, Trash2, Eye, EyeOff, Plus, Scissors, FolderOpen } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { formatPrice } from '@/lib/utils';
 import Link from 'next/link';
+import { CategoryModal } from './CategoryModal';
 
 type ServiceWithRelations = Service & {
   category: ServiceCategory | null;
@@ -20,10 +21,12 @@ interface ServicesListProps {
   currency?: string;
 }
 
-export function ServicesList({ services, categories, businessId, currency = 'ILS' }: ServicesListProps) {
+export function ServicesList({ services, categories: initialCategories, businessId, currency = 'ILS' }: ServicesListProps) {
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [categories, setCategories] = useState<ServiceCategory[]>(initialCategories);
 
   const filteredServices = services.filter((service) => {
     if (selectedCategory === 'all') return true;
@@ -76,10 +79,27 @@ export function ServicesList({ services, categories, businessId, currency = 'ILS
     }
   };
 
+  const refreshCategories = async () => {
+    try {
+      const response = await fetch(`/api/service-categories?businessId=${businessId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setCategories(data);
+      }
+    } catch (error) {
+      console.error('Error refreshing categories:', error);
+    }
+  };
+
+  const handleCategoryUpdated = () => {
+    refreshCategories();
+    router.refresh();
+  };
+
   return (
     <div>
       {/* Category Filter */}
-      <div className="mb-6 flex gap-2 flex-wrap bg-white md:bg-transparent p-4 md:p-0 -mx-4 md:mx-0 rounded-lg md:rounded-none">
+      <div className="mb-6 flex gap-2 flex-wrap items-center bg-white md:bg-transparent p-4 md:p-0 -mx-4 md:mx-0 rounded-lg md:rounded-none">
         <button
           onClick={() => setSelectedCategory('all')}
           className={`px-4 py-2 rounded-lg transition-colors ${
@@ -113,6 +133,17 @@ export function ServicesList({ services, categories, businessId, currency = 'ILS
         >
           ללא קטגוריה
         </button>
+        
+        {/* Manage Categories Button */}
+        <div className="mr-auto">
+          <button
+            onClick={() => setIsCategoryModalOpen(true)}
+            className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors font-medium border border-gray-300"
+          >
+            <FolderOpen className="w-4 h-4 inline-block ml-2" />
+            <span>נהל קטגוריות</span>
+          </button>
+        </div>
       </div>
 
       {/* Services Grid */}
@@ -303,6 +334,15 @@ export function ServicesList({ services, categories, businessId, currency = 'ILS
           </div>
         </>
       )}
+
+      {/* Category Management Modal */}
+      <CategoryModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        businessId={businessId}
+        categories={categories}
+        onCategoryCreated={handleCategoryUpdated}
+      />
     </div>
   );
 }

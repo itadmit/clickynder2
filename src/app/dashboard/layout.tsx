@@ -27,11 +27,12 @@ export default async function DashboardLayout({
       id: true,
       name: true,
       logoUrl: true,
+      slug: true,
     },
   });
 
   return (
-    <BusinessProvider business={{ name: business?.name, logoUrl: business?.logoUrl }}>
+    <BusinessProvider business={{ name: business?.name, logoUrl: business?.logoUrl, slug: business?.slug }}>
       <div className="flex min-h-screen bg-gray-50 w-full overflow-x-hidden">
         {/* Sidebar - Fixed on right */}
         <Sidebar businessName={business?.name} businessLogo={business?.logoUrl} />

@@ -5,6 +5,7 @@ import { createContext, useContext } from 'react';
 interface BusinessContextType {
   name?: string;
   logoUrl?: string | null;
+  slug?: string;
 }
 
 const BusinessContext = createContext<BusinessContextType>({});

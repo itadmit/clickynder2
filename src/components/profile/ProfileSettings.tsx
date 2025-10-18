@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
-import { User, Mail, Phone, Calendar, LogOut, Save } from 'lucide-react';
+import { User, Mail, Phone, Calendar, LogOut, Save, Trash2 } from 'lucide-react';
 
 interface ProfileSettingsProps {
   user: {
@@ -54,6 +54,40 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
     await signOut({ callbackUrl: '/' });
   };
 
+  const handleResetData = async () => {
+    if (!confirm('⚠️ אזהרה!\n\nפעולה זו תמחק את כל הנתונים שלך לצמיתות:\n- תורים\n- לקוחות\n- שירותים\n- עובדים\n- סניפים\n\nלאחר המחיקה המערכת תאפס למצב התחלתי.\n\nהאם אתה בטוח שברצונך להמשיך?')) {
+      return;
+    }
+
+    if (!confirm('האם אתה באמת בטוח? פעולה זו לא ניתנת לביטול!')) {
+      return;
+    }
+
+    setIsLoading(true);
+    setMessage(null);
+
+    try {
+      const response = await fetch(`/api/profile/reset`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to reset data');
+      }
+
+      setMessage({ type: 'success', text: 'כל הנתונים נמחקו בהצלחה. מפנה מחדש...' });
+      
+      // המתן 2 שניות ואז התנתק
+      setTimeout(async () => {
+        await signOut({ callbackUrl: '/auth/signin' });
+      }, 2000);
+    } catch (error) {
+      console.error('Error resetting data:', error);
+      setMessage({ type: 'error', text: 'אירעה שגיאה במחיקת הנתונים' });
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Profile Info Card */}
@@ -76,7 +110,7 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                className="form-input pr-10"
+                className="form-input !pr-10"
                 required
               />
             </div>
@@ -93,7 +127,7 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
                 type="email"
                 id="email"
                 value={user.email}
-                className="form-input pr-10 bg-gray-50 cursor-not-allowed"
+                className="form-input !pr-10 bg-gray-50 cursor-not-allowed"
                 disabled
               />
             </div>
@@ -112,7 +146,7 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
                 id="phone"
                 value={formData.phone}
                 onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
-                className="form-input pr-10"
+                className="form-input !pr-10"
                 placeholder="050-1234567"
               />
             </div>
@@ -126,7 +160,7 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
               <input
                 type="text"
                 value={new Date(user.createdAt).toLocaleDateString('he-IL')}
-                className="form-input pr-10 bg-gray-50 cursor-not-allowed"
+                className="form-input !pr-10 bg-gray-50 cursor-not-allowed"
                 disabled
               />
             </div>
@@ -145,38 +179,61 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
             </div>
           )}
 
-          {/* Submit Button */}
-          <button type="submit" className="btn btn-primary" disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>שומר...</span>
-              </>
-            ) : (
-              <>
-                <Save className="w-5 h-5" />
-                <span>שמור שינויים</span>
-              </>
-            )}
-          </button>
+          {/* Buttons - בשורה אחת */}
+          <div className="flex gap-3">
+            <button 
+              type="submit" 
+              className="btn btn-primary flex-1"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>שומר...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="w-5 h-5" />
+                  <span>שמור שינויים</span>
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="btn bg-gray-600 text-white hover:bg-gray-700 flex-1"
+              disabled={isLoading}
+            >
+              <LogOut className="w-5 h-5" />
+              <span>התנתק</span>
+            </button>
+          </div>
         </form>
       </div>
 
-      {/* Logout Card */}
-      <div className="card p-6 border-red-200">
-        <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-red-600">
-          <LogOut className="w-5 h-5" />
-          יציאה מהחשבון
+      {/* Danger Zone - Reset Data */}
+      <div className="card p-6 border-2 border-red-300 bg-red-50">
+        <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-red-700">
+          <Trash2 className="w-5 h-5" />
+          אזור מסוכן
         </h2>
-        <p className="text-gray-600 mb-4">
-          לחץ על הכפתור למטה כדי להתנתק מהחשבון שלך
-        </p>
+        <div className="bg-white rounded-lg p-4 mb-4 border border-red-200">
+          <p className="text-gray-700 mb-2 font-semibold">
+            מחק את כל התוכן ואפס למצב התחלתי
+          </p>
+          <p className="text-sm text-gray-600">
+            פעולה זו תמחק לצמיתות את כל הנתונים: תורים, לקוחות, שירותים, עובדים וסניפים.
+            המערכת תחזור למצב התחלתי כאילו נרשמת עכשיו.
+          </p>
+        </div>
         <button
-          onClick={handleLogout}
-          className="btn bg-red-600 text-white hover:bg-red-700"
+          onClick={handleResetData}
+          className="btn bg-red-600 text-white hover:bg-red-700 w-full sm:w-auto"
+          disabled={isLoading}
         >
-          <LogOut className="w-5 h-5" />
-          <span>התנתק</span>
+          <Trash2 className="w-5 h-5" />
+          <span>מחק את כל הנתונים</span>
         </button>
       </div>
     </div>

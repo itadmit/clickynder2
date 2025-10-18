@@ -61,9 +61,15 @@ export function NotificationsDropdown() {
     };
   }, [isOpen]);
 
-  // Fetch notifications when dropdown opens
+  // Fetch notifications on mount and when dropdown opens
   useEffect(() => {
-    if (isOpen && notifications.length === 0) {
+    // Fetch immediately on mount for unread count
+    fetchNotifications();
+  }, []);
+
+  // Refresh notifications when dropdown opens
+  useEffect(() => {
+    if (isOpen) {
       fetchNotifications();
     }
   }, [isOpen]);

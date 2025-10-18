@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { User, Menu } from 'lucide-react';
 import { NotificationsDropdown } from './NotificationsDropdown';
+import { UserDropdown } from './UserDropdown';
 import { useBusiness } from '@/contexts/BusinessContext';
 
 interface DashboardHeaderProps {
@@ -18,10 +19,6 @@ export function DashboardHeader({ title, subtitle }: DashboardHeaderProps) {
 
   const handleOpenSidebar = () => {
     window.dispatchEvent(new Event('openSidebar'));
-  };
-
-  const handleProfileClick = () => {
-    router.push('/dashboard/profile');
   };
 
   return (
@@ -54,19 +51,11 @@ export function DashboardHeader({ title, subtitle }: DashboardHeaderProps) {
 
             {/* Profile & Notifications - Left side */}
             <div className="flex items-center gap-1 flex-shrink-0">
-              {/* User Profile */}
-              <button 
-                onClick={handleProfileClick}
-                className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
-                aria-label="פרופיל משתמש"
-              >
-                <div className="w-7 h-7 bg-primary-600 rounded-full flex items-center justify-center flex-shrink-0">
-                  <User className="w-3.5 h-3.5 text-white" />
-                </div>
-              </button>
-
               {/* Notifications */}
               <NotificationsDropdown />
+
+              {/* User Dropdown */}
+              <UserDropdown />
             </div>
           </div>
         </div>
@@ -93,23 +82,11 @@ export function DashboardHeader({ title, subtitle }: DashboardHeaderProps) {
               </div>
 
               <div className="flex items-center gap-3 flex-shrink-0">
-                {/* User Profile */}
-                <button 
-                  onClick={handleProfileClick}
-                  className="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-gray-100 transition-colors"
-                  aria-label="פרופיל משתמש"
-                >
-                  <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center flex-shrink-0">
-                    <User className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="text-sm text-right">
-                    <p className="font-medium text-gray-900 text-sm truncate max-w-[120px]">{session?.user?.name}</p>
-                    <p className="text-gray-500 text-xs truncate max-w-[120px]">{session?.user?.email}</p>
-                  </div>
-                </button>
-
                 {/* Notifications */}
                 <NotificationsDropdown />
+
+                {/* User Dropdown */}
+                <UserDropdown />
               </div>
             </div>
           </div>

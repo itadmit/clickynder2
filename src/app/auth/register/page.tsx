@@ -236,7 +236,13 @@ export default function RegisterPage() {
 
     // Check phone availability with debounce
     if (name === 'phone') {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      // הסרת כל מה שלא ספרות
+      const numbersOnly = value.replace(/\D/g, '');
+      
+      // הגבלה ל-10 ספרות מקסימום
+      const limitedValue = numbersOnly.slice(0, 10);
+      
+      setFormData(prev => ({ ...prev, [name]: limitedValue }));
       
       if (errors[name]) {
         setErrors(prev => ({ ...prev, [name]: '' }));
@@ -249,7 +255,7 @@ export default function RegisterPage() {
 
       // Set new timeout for checking
       const timeout = setTimeout(() => {
-        checkPhoneAvailability(value);
+        checkPhoneAvailability(limitedValue);
       }, 500);
 
       setPhoneCheckTimeout(timeout);
@@ -301,9 +307,12 @@ export default function RegisterPage() {
     }
     
     // Validate phone
-    if (!formData.phone.trim()) newErrors.phone = 'טלפון הוא שדה חובה';
-    else if (!/^05\d{8}$/.test(formData.phone.replace(/[-\s]/g, ''))) {
-      newErrors.phone = 'מספר טלפון לא תקין (050/051/052/053/054/055/058)';
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'טלפון הוא שדה חובה';
+    } else if (formData.phone.length !== 10) {
+      newErrors.phone = 'מספר טלפון חייב להכיל בדיוק 10 ספרות';
+    } else if (!/^05\d{8}$/.test(formData.phone)) {
+      newErrors.phone = 'מספר טלפון לא תקין (חייב להתחיל ב-05)';
     } else if (phoneCheckStatus === 'taken') {
       newErrors.phone = 'מספר טלפון זה כבר בשימוש';
     } else if (phoneCheckStatus === 'checking') {
@@ -595,7 +604,7 @@ export default function RegisterPage() {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      className={`form-input pl-10 ${
+                      className={`form-input pr-10 ${
                         errors.email 
                           ? 'border-red-500' 
                           : emailCheckStatus === 'available' 
@@ -607,7 +616,7 @@ export default function RegisterPage() {
                       placeholder="example@email.com"
                       dir="ltr"
                     />
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
                       {emailCheckStatus === 'checking' && (
                         <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
                       )}
@@ -637,7 +646,8 @@ export default function RegisterPage() {
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
-                      className={`form-input pl-10 ${
+                      maxLength={10}
+                      className={`form-input pr-10 ${
                         errors.phone 
                           ? 'border-red-500' 
                           : phoneCheckStatus === 'available' 
@@ -649,7 +659,7 @@ export default function RegisterPage() {
                       placeholder="0501234567"
                       dir="ltr"
                     />
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
                       {phoneCheckStatus === 'checking' && (
                         <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
                       )}

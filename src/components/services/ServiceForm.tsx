@@ -4,8 +4,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { Service, ServiceCategory, Staff } from '@prisma/client';
-import { ArrowRight, Save } from 'lucide-react';
+import { ArrowRight, Save, Plus } from 'lucide-react';
 import Link from 'next/link';
+import { CategoryModal } from './CategoryModal';
 
 interface ServiceFormProps {
   businessId: string;
@@ -14,9 +15,11 @@ interface ServiceFormProps {
   service?: Service & { serviceStaff?: { staffId: string }[] };
 }
 
-export function ServiceForm({ businessId, categories, staff, service }: ServiceFormProps) {
+export function ServiceForm({ businessId, categories: initialCategories, staff, service }: ServiceFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [categories, setCategories] = useState<ServiceCategory[]>(initialCategories);
   const [formData, setFormData] = useState({
     name: service?.name || '',
     categoryId: service?.categoryId || '',
@@ -46,6 +49,18 @@ export function ServiceForm({ businessId, categories, staff, service }: ServiceF
         ? prev.staffIds.filter((id) => id !== staffId)
         : [...prev.staffIds, staffId],
     }));
+  };
+
+  const refreshCategories = async () => {
+    try {
+      const response = await fetch(`/api/service-categories?businessId=${businessId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setCategories(data);
+      }
+    } catch (error) {
+      console.error('Error refreshing categories:', error);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -109,9 +124,19 @@ export function ServiceForm({ businessId, categories, staff, service }: ServiceF
 
         {/* Category */}
         <div>
-          <label htmlFor="categoryId" className="form-label">
-            קטגוריה
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label htmlFor="categoryId" className="form-label !mb-0">
+              קטגוריה
+            </label>
+            <button
+              type="button"
+              onClick={() => setIsCategoryModalOpen(true)}
+              className="text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1"
+            >
+              <Plus className="w-4 h-4" />
+              <span>נהל קטגוריות</span>
+            </button>
+          </div>
           <select
             id="categoryId"
             name="categoryId"
@@ -298,6 +323,15 @@ export function ServiceForm({ businessId, categories, staff, service }: ServiceF
           </Link>
         </div>
       </div>
+
+      {/* Category Management Modal */}
+      <CategoryModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        businessId={businessId}
+        categories={categories}
+        onCategoryCreated={refreshCategories}
+      />
     </form>
   );
 }
