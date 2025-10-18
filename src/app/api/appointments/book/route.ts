@@ -47,6 +47,42 @@ export async function POST(req: NextRequest) {
     const startAt = new Date(year, month - 1, day, hours, minutes);
     const endAt = addMinutes(startAt, service.durationMin + (service.bufferAfterMin || 0));
 
+    // Check for business-wide time-off (holidays)
+    const businessTimeOff = await prisma.timeOff.findFirst({
+      where: {
+        businessId,
+        scope: 'business',
+        startAt: { lte: endAt },
+        endAt: { gte: startAt },
+      },
+    });
+
+    if (businessTimeOff) {
+      return NextResponse.json(
+        { error: 'העסק לא פעיל בתאריך זה' },
+        { status: 409 }
+      );
+    }
+
+    // Check for staff time-off (if staffId is provided)
+    if (staffId) {
+      const staffTimeOff = await prisma.timeOff.findFirst({
+        where: {
+          staffId,
+          scope: 'staff',
+          startAt: { lte: endAt },
+          endAt: { gte: startAt },
+        },
+      });
+
+      if (staffTimeOff) {
+        return NextResponse.json(
+          { error: 'העובד אינו זמין בתאריך זה' },
+          { status: 409 }
+        );
+      }
+    }
+
     // Check if slot is still available
     const conflictingAppointment = await prisma.appointment.findFirst({
       where: {

@@ -143,6 +143,7 @@ export function BranchesList({ branches }: BranchesListProps) {
             <button
               onClick={() => router.push(`/dashboard/branches/${branch.id}/edit`)}
               className="btn btn-secondary flex-1 flex items-center justify-center gap-2 text-sm"
+              title="עריכת פרטי הסניף"
             >
               <Edit className="w-4 h-4" />
               <span>עריכה</span>
@@ -150,21 +151,21 @@ export function BranchesList({ branches }: BranchesListProps) {
             <button
               onClick={() => handleToggleActive(branch.id, branch.active)}
               className="btn btn-secondary px-3"
-              title={branch.active ? 'השבת' : 'הפעל'}
+              data-tooltip={branch.active ? 'השבתת הסניף (לא יוצג ללקוחות)' : 'הפעלת הסניף מחדש'}
             >
               {branch.active ? (
-                <Eye className="w-4 h-4" />
+                <Eye className="w-4 h-4 pointer-events-none" />
               ) : (
-                <EyeOff className="w-4 h-4" />
+                <EyeOff className="w-4 h-4 pointer-events-none" />
               )}
             </button>
             <button
               onClick={() => handleDelete(branch.id)}
               disabled={isDeleting === branch.id}
               className="btn btn-danger px-3"
-              title="מחק"
+              data-tooltip="מחיקת הסניף לצמיתות"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-4 h-4 pointer-events-none" />
             </button>
           </div>
         </div>

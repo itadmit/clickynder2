@@ -52,6 +52,37 @@ export async function GET(req: NextRequest) {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
+    // Check for business-wide holidays or time-offs
+    const businessTimeOff = await prisma.timeOff.findFirst({
+      where: {
+        businessId,
+        scope: 'business',
+        startAt: { lte: endOfDay },
+        endAt: { gte: startOfDay },
+      },
+    });
+
+    // If there's a business-wide time-off, no slots available
+    if (businessTimeOff) {
+      return NextResponse.json({ slots: [], reason: 'holiday' });
+    }
+
+    // Check for staff time-off (if staffId is provided)
+    if (staffId) {
+      const staffTimeOff = await prisma.timeOff.findFirst({
+        where: {
+          staffId,
+          scope: 'staff',
+          startAt: { lte: endOfDay },
+          endAt: { gte: startOfDay },
+        },
+      });
+
+      if (staffTimeOff) {
+        return NextResponse.json({ slots: [], reason: 'staff_unavailable' });
+      }
+    }
+
     const existingAppointments = await prisma.appointment.findMany({
       where: {
         businessId,

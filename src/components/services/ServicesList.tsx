@@ -139,6 +139,7 @@ export function ServicesList({ services, categories: initialCategories, business
           <button
             onClick={() => setIsCategoryModalOpen(true)}
             className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors font-medium border border-gray-300"
+            title="יצירה, עריכה ומחיקה של קטגוריות שירותים"
           >
             <FolderOpen className="w-4 h-4 inline-block ml-2" />
             <span>נהל קטגוריות</span>
@@ -305,6 +306,7 @@ export function ServicesList({ services, categories: initialCategories, business
                   <button
                     onClick={() => router.push(`/dashboard/services/${service.id}/edit`)}
                     className="btn btn-secondary flex-1 flex items-center justify-center gap-2 text-sm"
+                    title="עריכת פרטי השירות"
                   >
                     <Edit className="w-4 h-4" />
                     <span>עריכה</span>
@@ -312,21 +314,21 @@ export function ServicesList({ services, categories: initialCategories, business
                   <button
                     onClick={() => handleToggleActive(service.id, service.active)}
                     className="btn btn-secondary px-3"
-                    title={service.active ? 'השבת' : 'הפעל'}
+                    data-tooltip={service.active ? 'השבתת השירות (לא יוצג ללקוחות)' : 'הפעלת השירות מחדש'}
                   >
                     {service.active ? (
-                      <Eye className="w-4 h-4" />
+                      <Eye className="w-4 h-4 pointer-events-none" />
                     ) : (
-                      <EyeOff className="w-4 h-4" />
+                      <EyeOff className="w-4 h-4 pointer-events-none" />
                     )}
                   </button>
                   <button
                     onClick={() => handleDelete(service.id)}
                     disabled={isDeleting === service.id}
                     className="btn btn-danger px-3"
-                    title="מחק"
+                    data-tooltip="מחיקת השירות לצמיתות"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4 pointer-events-none" />
                   </button>
                 </div>
               </div>

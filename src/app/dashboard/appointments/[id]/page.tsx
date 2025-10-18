@@ -268,6 +268,7 @@ export default function AppointmentDetailPage() {
                     onClick={() => updateStatus('confirmed')}
                     disabled={isUpdating}
                     className="btn btn-success"
+                    title="אישור התור ושליחת הודעה ללקוח"
                   >
                     אשר תור
                   </button>
@@ -279,6 +280,7 @@ export default function AppointmentDetailPage() {
                       onClick={() => updateStatus('completed')}
                       disabled={isUpdating}
                       className="btn btn-primary"
+                      title="סימון התור כהושלם (הלקוח הגיע והטיפול בוצע)"
                     >
                       סמן כהושלם
                     </button>
@@ -286,6 +288,7 @@ export default function AppointmentDetailPage() {
                       onClick={() => updateStatus('canceled')}
                       disabled={isUpdating}
                       className="btn btn-danger"
+                      title="ביטול התור ושליחת הודעה ללקוח"
                     >
                       בטל תור
                     </button>
@@ -296,6 +299,7 @@ export default function AppointmentDetailPage() {
                     onClick={() => updateStatus('no_show')}
                     disabled={isUpdating}
                     className="btn btn-secondary"
+                    title="הלקוח לא הגיע לתור"
                   >
                     לא הגיע
                   </button>

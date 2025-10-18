@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { Staff, Branch, Service, ServiceStaff } from '@prisma/client';
-import { Edit, Trash2, Eye, EyeOff, Phone, Mail, MapPin } from 'lucide-react';
+import { Edit, Trash2, Eye, EyeOff, Phone, Mail, MapPin, Calendar } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
+import { TimeOffModal } from './TimeOffModal';
 
 type StaffWithRelations = Staff & {
   branch: Branch | null;
@@ -17,10 +18,14 @@ interface StaffListProps {
   businessId: string;
 }
 
-export function StaffList({ staff, branches }: StaffListProps) {
+export function StaffList({ staff, branches, businessId }: StaffListProps) {
   const router = useRouter();
   const [selectedBranch, setSelectedBranch] = useState<string>('all');
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [timeOffModalOpen, setTimeOffModalOpen] = useState<{
+    staffId: string;
+    staffName: string;
+  } | null>(null);
 
   const filteredStaff = staff.filter((member) => {
     if (selectedBranch === 'all') return true;
@@ -194,33 +199,58 @@ export function StaffList({ staff, branches }: StaffListProps) {
                 <button
                   onClick={() => router.push(`/dashboard/staff/${member.id}/edit`)}
                   className="btn btn-secondary flex-1 flex items-center justify-center gap-2 text-sm"
+                  title="עריכת פרטי העובד"
                 >
                   <Edit className="w-4 h-4" />
                   <span>עריכה</span>
                 </button>
                 <button
+                  onClick={() =>
+                    setTimeOffModalOpen({
+                      staffId: member.id,
+                      staffName: member.name,
+                    })
+                  }
+                  className="btn btn-secondary px-3"
+                  data-tooltip="ניהול חופשים וימי היעדרות"
+                >
+                  <Calendar className="w-4 h-4 pointer-events-none" />
+                </button>
+                <button
                   onClick={() => handleToggleActive(member.id, member.active)}
                   className="btn btn-secondary px-3"
-                  title={member.active ? 'השבת' : 'הפעל'}
+                  data-tooltip={member.active ? 'השבתת העובד (לא יוצג ללקוחות)' : 'הפעלת העובד מחדש'}
                 >
                   {member.active ? (
-                    <Eye className="w-4 h-4" />
+                    <Eye className="w-4 h-4 pointer-events-none" />
                   ) : (
-                    <EyeOff className="w-4 h-4" />
+                    <EyeOff className="w-4 h-4 pointer-events-none" />
                   )}
                 </button>
                 <button
                   onClick={() => handleDelete(member.id)}
                   disabled={isDeleting === member.id}
                   className="btn btn-danger px-3"
-                  title="מחק"
+                  data-tooltip="מחיקת העובד לצמיתות"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-4 h-4 pointer-events-none" />
                 </button>
               </div>
             </div>
           ))}
         </div>
+      )}
+
+      {/* Time Off Modal */}
+      {timeOffModalOpen && (
+        <TimeOffModal
+          isOpen={true}
+          onClose={() => setTimeOffModalOpen(null)}
+          businessId={businessId}
+          staffId={timeOffModalOpen.staffId}
+          staffName={timeOffModalOpen.staffName}
+          onSuccess={() => router.refresh()}
+        />
       )}
     </div>
   );

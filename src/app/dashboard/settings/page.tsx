@@ -10,6 +10,7 @@ import { WorkingHours } from '@/components/settings/WorkingHours';
 import { SlotSettings } from '@/components/settings/SlotSettings';
 import { ReminderSettings } from '@/components/settings/ReminderSettings';
 import { NotificationSettings } from '@/components/settings/NotificationSettings';
+import { HolidaysSettings } from '@/components/settings/HolidaysSettings';
 
 export default async function SettingsPage() {
   const session = await getServerSession(authOptions);
@@ -64,12 +65,17 @@ export default async function SettingsPage() {
           <ContactSettings business={business} />
 
           {/* Tab 3: Working Hours */}
-          <div className="card">
-            <h2 className="text-xl font-bold mb-6">ימי ושעות עבודה</h2>
-            <WorkingHours
-              businessId={business.id}
-              businessHours={business.businessHours}
-            />
+          <div className="space-y-6">
+            <div className="card">
+              <h2 className="text-xl font-bold mb-6">ימי ושעות עבודה</h2>
+              <WorkingHours
+                businessId={business.id}
+                businessHours={business.businessHours}
+              />
+            </div>
+
+            {/* Holidays */}
+            <HolidaysSettings businessId={business.id} />
           </div>
 
           {/* Tab 4: Slot Policy */}

@@ -291,8 +291,9 @@ export default function CustomersPage() {
                               (window.location.href = `/dashboard/customers/${customer.id}`)
                             }
                             className="text-primary-600 hover:text-primary-700 flex items-center gap-1"
+                            title="צפייה בפרטי הלקוח והיסטוריית תורים"
                           >
-                            <Eye className="w-4 h-4" />
+                            <Eye className="w-4 h-4 pointer-events-none" />
                             <span>צפה</span>
                           </button>
                         </td>

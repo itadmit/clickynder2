@@ -409,6 +409,7 @@ model TimeOff {
 }
 
 enum TimeOffScope {
+  business
   branch
   staff
 }
