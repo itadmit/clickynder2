@@ -10,7 +10,7 @@ import { Mail, Lock, Eye, EyeOff, Calendar, Users, Clock } from 'lucide-react';
 export default function SignInPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState(''); // Can be email or phone
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -29,7 +29,7 @@ export default function SignInPage() {
 
     try {
       const result = await signIn('credentials', {
-        email,
+        identifier, // Can be email or phone
         password,
         redirect: false,
       });
@@ -123,27 +123,27 @@ export default function SignInPage() {
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="px-4 bg-white text-gray-500 font-medium">
-                או המשך עם אימייל
+                או המשך עם אימייל/טלפון
               </span>
             </div>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email */}
+            {/* Email or Phone */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                אימייל
+              <label htmlFor="identifier" className="block text-sm font-medium text-gray-700 mb-2">
+                אימייל או טלפון
               </label>
               <div className="relative">
                 <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="identifier"
+                  type="text"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
                   className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="your@email.com"
+                  placeholder="your@email.com או 0501234567"
                   required
                   disabled={isLoading}
                 />

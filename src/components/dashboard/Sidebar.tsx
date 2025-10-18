@@ -78,6 +78,7 @@ interface SidebarProps {
 export function Sidebar({ onToggle, businessName, businessLogo }: SidebarProps = {}) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [highlightedPath, setHighlightedPath] = useState<string | null>(null);
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/' });
@@ -93,6 +94,16 @@ export function Sidebar({ onToggle, businessName, businessLogo }: SidebarProps =
     const handleOpenSidebar = () => setIsOpen(true);
     window.addEventListener('openSidebar', handleOpenSidebar);
     return () => window.removeEventListener('openSidebar', handleOpenSidebar);
+  }, []);
+
+  // Listen for highlight events from onboarding tour
+  useEffect(() => {
+    const handleHighlight = (event: any) => {
+      console.log('Sidebar received highlight event:', event.detail.path); // Debug
+      setHighlightedPath(event.detail.path);
+    };
+    window.addEventListener('highlightSidebarItem', handleHighlight);
+    return () => window.removeEventListener('highlightSidebarItem', handleHighlight);
   }, []);
 
   // Close sidebar when route changes (mobile)
@@ -114,13 +125,17 @@ export function Sidebar({ onToggle, businessName, businessLogo }: SidebarProps =
 
   return (
     <>
-
-      {/* Overlay */}
+      {/* Overlay for mobile menu */}
       {isOpen && (
         <div
           className="lg:hidden fixed inset-0 bg-black/50 z-40 transition-opacity"
           onClick={() => setIsOpen(false)}
         />
+      )}
+
+      {/* Highlight overlay - dims everything except sidebar */}
+      {highlightedPath && (
+        <div className="fixed inset-0 bg-black/60 z-30 pointer-events-none" />
       )}
 
       {/* Sidebar */}
@@ -162,20 +177,29 @@ export function Sidebar({ onToggle, businessName, businessLogo }: SidebarProps =
             const isActive = item.href === '/dashboard'
               ? pathname === '/dashboard'
               : pathname === item.href || pathname?.startsWith(item.href + '/');
+            
+            const isHighlighted = highlightedPath === item.href;
 
             return (
-              <li key={item.href}>
+              <li key={item.href} className="relative">
                 <Link
                   href={item.href}
                   className={cn(
-                    'flex items-center gap-3 px-4 py-3 rounded-lg transition-all',
+                    'flex items-center gap-3 px-4 py-3 rounded-lg transition-all relative',
                     isActive
                       ? 'bg-primary-50 text-primary-700 font-medium'
-                      : 'text-gray-700 hover:bg-gray-50'
+                      : 'text-gray-700 hover:bg-gray-50',
+                    isHighlighted && 'ring-2 ring-blue-500 ring-offset-2 bg-blue-50 z-10 shadow-lg'
                   )}
                 >
                   <Icon className="w-5 h-5" />
                   <span>{item.title}</span>
+                  {isHighlighted && (
+                    <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                    </span>
+                  )}
                 </Link>
               </li>
             );

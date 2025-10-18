@@ -34,22 +34,25 @@ export const authOptions: NextAuthOptions = {
       }
     }),
     
-    // Credentials Provider (Email & Password)
+    // Credentials Provider (Email/Phone & Password)
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
-        email: { label: 'אימייל', type: 'email' },
+        identifier: { label: 'אימייל או טלפון', type: 'text' },
         password: { label: 'סיסמה', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error('נא למלא אימייל וסיסמה');
+        if (!credentials?.identifier || !credentials?.password) {
+          throw new Error('נא למלא אימייל/טלפון וסיסמה');
         }
 
+        // בדיקה אם זה אימייל או טלפון
+        const isEmail = credentials.identifier.includes('@');
+        
         const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email,
-          },
+          where: isEmail 
+            ? { email: credentials.identifier }
+            : { phone: credentials.identifier.replace(/[-\s]/g, '') }, // נרמול טלפון
         });
 
         if (!user) {

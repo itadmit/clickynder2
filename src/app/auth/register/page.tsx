@@ -21,7 +21,11 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [slugCheckStatus, setSlugCheckStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
+  const [emailCheckStatus, setEmailCheckStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
+  const [phoneCheckStatus, setPhoneCheckStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   const [slugCheckTimeout, setSlugCheckTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [emailCheckTimeout, setEmailCheckTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [phoneCheckTimeout, setPhoneCheckTimeout] = useState<NodeJS.Timeout | null>(null);
   const [setupStep, setSetupStep] = useState(0);
   
   // Form data
@@ -54,8 +58,14 @@ export default function RegisterPage() {
       if (slugCheckTimeout) {
         clearTimeout(slugCheckTimeout);
       }
+      if (emailCheckTimeout) {
+        clearTimeout(emailCheckTimeout);
+      }
+      if (phoneCheckTimeout) {
+        clearTimeout(phoneCheckTimeout);
+      }
     };
-  }, [slugCheckTimeout]);
+  }, [slugCheckTimeout, emailCheckTimeout, phoneCheckTimeout]);
 
   // Show loading while checking session
   if (status === 'loading') {
@@ -73,6 +83,70 @@ export default function RegisterPage() {
   if (status === 'authenticated') {
     return null;
   }
+
+  // Check email availability
+  const checkEmailAvailability = async (email: string) => {
+    if (!email || !email.includes('@')) {
+      setEmailCheckStatus('idle');
+      return;
+    }
+
+    setEmailCheckStatus('checking');
+
+    try {
+      const response = await fetch(`/api/auth/check-availability?email=${encodeURIComponent(email)}`);
+      const data = await response.json();
+
+      if (response.ok) {
+        setEmailCheckStatus(data.emailAvailable ? 'available' : 'taken');
+        if (!data.emailAvailable) {
+          setErrors(prev => ({ ...prev, email: 'משתמש עם אימייל זה כבר קיים' }));
+        } else {
+          setErrors(prev => {
+            const { email, ...rest } = prev;
+            return rest;
+          });
+        }
+      } else {
+        setEmailCheckStatus('idle');
+      }
+    } catch (error) {
+      console.error('Error checking email:', error);
+      setEmailCheckStatus('idle');
+    }
+  };
+
+  // Check phone availability
+  const checkPhoneAvailability = async (phone: string) => {
+    if (!phone || phone.length < 9) {
+      setPhoneCheckStatus('idle');
+      return;
+    }
+
+    setPhoneCheckStatus('checking');
+
+    try {
+      const response = await fetch(`/api/auth/check-availability?phone=${encodeURIComponent(phone)}`);
+      const data = await response.json();
+
+      if (response.ok) {
+        setPhoneCheckStatus(data.phoneAvailable ? 'available' : 'taken');
+        if (!data.phoneAvailable) {
+          setErrors(prev => ({ ...prev, phone: 'מספר טלפון זה כבר בשימוש' }));
+        } else {
+          setErrors(prev => {
+            const { phone, ...rest } = prev;
+            return rest;
+          });
+        }
+      } else {
+        setPhoneCheckStatus('idle');
+      }
+    } catch (error) {
+      console.error('Error checking phone:', error);
+      setPhoneCheckStatus('idle');
+    }
+  };
 
   // Check slug availability
   const checkSlugAvailability = async (slug: string) => {
@@ -136,6 +210,52 @@ export default function RegisterPage() {
       setSlugCheckStatus('idle');
       return;
     }
+
+    // Check email availability with debounce
+    if (name === 'email') {
+      setFormData(prev => ({ ...prev, [name]: value }));
+      
+      if (errors[name]) {
+        setErrors(prev => ({ ...prev, [name]: '' }));
+      }
+
+      // Clear previous timeout
+      if (emailCheckTimeout) {
+        clearTimeout(emailCheckTimeout);
+      }
+
+      // Set new timeout for checking
+      const timeout = setTimeout(() => {
+        checkEmailAvailability(value);
+      }, 500);
+
+      setEmailCheckTimeout(timeout);
+      setEmailCheckStatus('idle');
+      return;
+    }
+
+    // Check phone availability with debounce
+    if (name === 'phone') {
+      setFormData(prev => ({ ...prev, [name]: value }));
+      
+      if (errors[name]) {
+        setErrors(prev => ({ ...prev, [name]: '' }));
+      }
+
+      // Clear previous timeout
+      if (phoneCheckTimeout) {
+        clearTimeout(phoneCheckTimeout);
+      }
+
+      // Set new timeout for checking
+      const timeout = setTimeout(() => {
+        checkPhoneAvailability(value);
+      }, 500);
+
+      setPhoneCheckTimeout(timeout);
+      setPhoneCheckStatus('idle');
+      return;
+    }
     
     setFormData(prev => ({ ...prev, [name]: value }));
     
@@ -167,14 +287,31 @@ export default function RegisterPage() {
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) newErrors.name = 'שם מלא הוא שדה חובה';
+    
+    // Validate email
     if (!formData.email.trim()) newErrors.email = 'אימייל הוא שדה חובה';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'כתובת אימייל לא תקינה';
+    } else if (emailCheckStatus === 'taken') {
+      newErrors.email = 'משתמש עם אימייל זה כבר קיים';
+    } else if (emailCheckStatus === 'checking') {
+      newErrors.email = 'בודק זמינות...';
+    } else if (emailCheckStatus !== 'available') {
+      newErrors.email = 'אנא המתן לבדיקת זמינות האימייל';
     }
+    
+    // Validate phone
     if (!formData.phone.trim()) newErrors.phone = 'טלפון הוא שדה חובה';
     else if (!/^05\d{8}$/.test(formData.phone.replace(/[-\s]/g, ''))) {
       newErrors.phone = 'מספר טלפון לא תקין (050/051/052/053/054/055/058)';
+    } else if (phoneCheckStatus === 'taken') {
+      newErrors.phone = 'מספר טלפון זה כבר בשימוש';
+    } else if (phoneCheckStatus === 'checking') {
+      newErrors.phone = 'בודק זמינות...';
+    } else if (phoneCheckStatus !== 'available') {
+      newErrors.phone = 'אנא המתן לבדיקת זמינות הטלפון';
     }
+    
     if (!formData.password) newErrors.password = 'סיסמה היא שדה חובה';
     else if (formData.password.length < 6) {
       newErrors.password = 'הסיסמה חייבת להכיל לפחות 6 תווים';
@@ -452,16 +589,40 @@ export default function RegisterPage() {
                     <Mail className="w-4 h-4 inline ml-1" />
                     אימייל *
                   </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className={`form-input ${errors.email ? 'border-red-500' : ''}`}
-                    placeholder="example@email.com"
-                    dir="ltr"
-                  />
+                  <div className="relative">
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className={`form-input pl-10 ${
+                        errors.email 
+                          ? 'border-red-500' 
+                          : emailCheckStatus === 'available' 
+                          ? 'border-green-500' 
+                          : emailCheckStatus === 'taken'
+                          ? 'border-red-500'
+                          : ''
+                      }`}
+                      placeholder="example@email.com"
+                      dir="ltr"
+                    />
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                      {emailCheckStatus === 'checking' && (
+                        <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                      )}
+                      {emailCheckStatus === 'available' && (
+                        <CheckCircle className="w-5 h-5 text-green-500" />
+                      )}
+                      {emailCheckStatus === 'taken' && (
+                        <XCircle className="w-5 h-5 text-red-500" />
+                      )}
+                    </div>
+                  </div>
                   {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+                  {emailCheckStatus === 'available' && !errors.email && (
+                    <p className="text-green-600 text-sm mt-1">✓ האימייל זמין</p>
+                  )}
                 </div>
 
                 {/* Phone */}
@@ -470,17 +631,40 @@ export default function RegisterPage() {
                     <Phone className="w-4 h-4 inline ml-1" />
                     טלפון (ישמש להתחברות) *
                   </label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className={`form-input ${errors.phone ? 'border-red-500' : ''}`}
-                    placeholder="050-1234567"
-                    dir="ltr"
-                  />
+                  <div className="relative">
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      className={`form-input pl-10 ${
+                        errors.phone 
+                          ? 'border-red-500' 
+                          : phoneCheckStatus === 'available' 
+                          ? 'border-green-500' 
+                          : phoneCheckStatus === 'taken'
+                          ? 'border-red-500'
+                          : ''
+                      }`}
+                      placeholder="0501234567"
+                      dir="ltr"
+                    />
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                      {phoneCheckStatus === 'checking' && (
+                        <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                      )}
+                      {phoneCheckStatus === 'available' && (
+                        <CheckCircle className="w-5 h-5 text-green-500" />
+                      )}
+                      {phoneCheckStatus === 'taken' && (
+                        <XCircle className="w-5 h-5 text-red-500" />
+                      )}
+                    </div>
+                  </div>
                   {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
-                  <p className="text-xs text-gray-500 mt-1">הטלפון ישמש להתחברות ולקבלת התראות</p>
+                  {phoneCheckStatus === 'available' && !errors.phone && (
+                    <p className="text-green-600 text-sm mt-1">✓ הטלפון זמין</p>
+                  )}
                 </div>
 
                 {/* Password */}

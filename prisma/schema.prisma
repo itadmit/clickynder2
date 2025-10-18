@@ -18,7 +18,7 @@ model User {
   id            String    @id @default(cuid())
   name          String
   email         String    @unique
-  phone         String?
+  phone         String    @unique
   passwordHash  String    @map("password_hash")
   isSuperAdmin  Boolean   @default(false) @map("is_super_admin")
   createdAt     DateTime  @default(now()) @map("created_at")
@@ -30,6 +30,7 @@ model User {
   memberships     BusinessMember[]
 
   @@index([email])
+  @@index([phone])
   @@index([isSuperAdmin])
   @@map("users")
 }

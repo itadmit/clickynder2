@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { CopyLinkButton } from '@/components/dashboard/CopyLinkButton';
+import { DashboardClient } from '@/components/dashboard/DashboardClient';
 import { Calendar, Users, Scissors, TrendingUp, AlertCircle, Plus } from 'lucide-react';
 import Link from 'next/link';
 
@@ -102,6 +103,12 @@ export default async function DashboardPage() {
 
   return (
     <>
+      <DashboardClient
+        businessSlug={business.slug}
+        staffCount={business._count.staff}
+        servicesCount={business._count.services}
+      />
+      
       <DashboardHeader
         title={`שלום, ${session.user.name} 👋`}
         subtitle={`עסק: ${business.name}`}
